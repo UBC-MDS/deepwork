@@ -1,5 +1,8 @@
 """Pomodoro session planning function for deepwork."""
 
+from typing import Optional
+import pandas as pd
+
 def plan_pomodoro(
     total_minutes: int,
     technique: str = "pomodoro",
