@@ -1,81 +1,159 @@
 # Contributing
 
-Contributions are welcome, and they are greatly appreciated! Every little bit
-helps, and credit will always be given.
+Contributions of all kinds are welcome here, and they are greatly appreciated!
+Every little bit helps, and credit will always be given.
 
-## Types of Contributions
+## Example Contributions
+
+You can contribute in many ways, for example:
+
+* [Report bugs](#report-bugs)
+* [Fix Bugs](#fix-bugs)
+* [Implement Features](#implement-features)
+* [Write Documentation](#write-documentation)
+* [Submit Feedback](#submit-feedback)
 
 ### Report Bugs
 
-If you are reporting a bug, please include:
+Report bugs at https://github.com/UBC-MDS/deepwork/issues.
 
-* Your operating system name and version.
-* Any details about your local setup that might be helpful in troubleshooting.
-* Detailed steps to reproduce the bug.
+**If you are reporting a bug, please follow the template guidelines. The more
+detailed your report, the easier and thus faster we can help you.**
 
 ### Fix Bugs
 
-Look through the GitHub issues for bugs. Anything tagged with "bug" and "help
-wanted" is open to whoever wants to implement it.
+Look through the GitHub issues for bugs. Anything labelled with `bug` and
+`help wanted` is open to whoever wants to implement it. When you decide to work on such
+an issue, please assign yourself to it and add a comment that you'll be working on that,
+too. If you see another issue without the `help wanted` label, just post a comment, the
+maintainers are usually happy for any support that they can get.
 
 ### Implement Features
 
-Look through the GitHub issues for features. Anything tagged with "enhancement"
-and "help wanted" is open to whoever wants to implement it.
+Look through the GitHub issues for features. Anything labelled with
+`enhancement` and `help wanted` is open to whoever wants to implement it. As
+for [fixing bugs](#fix-bugs), please assign yourself to the issue and add a comment that
+you'll be working on that, too. If another enhancement catches your fancy, but it
+doesn't have the `help wanted` label, just post a comment, the maintainers are usually
+happy for any support that they can get.
 
 ### Write Documentation
 
-You can never have enough documentation! Please feel free to contribute to any
-part of the documentation, such as the official docs, docstrings, or even
-on the web in blog posts, articles, and such.
+deepwork could always use more documentation, whether as
+part of the official documentation, in docstrings, or even on the web in blog
+posts, articles, and such. Just
+[open an issue](https://github.com/UBC-MDS/deepwork/issues)
+to let us know what you will be working on so that we can provide you with guidance.
 
 ### Submit Feedback
 
-If you are proposing a feature:
+The best way to send feedback is to file an issue at
+https://github.com/UBC-MDS/deepwork/issues. If your feedback fits the format of one of
+the issue templates, please use that. Remember that this is a volunteer-driven
+project and everybody has limited time.
 
-* Explain in detail how it would work.
-* Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
+## Git Workflow
+
+We use a branching workflow based on GitHub Flow. Here's how it works:
+
+### Branch Structure
+
+```
+main
+ └── develop
+      ├── feature/feature-name
+      │    └── test/feature-name
+      └── fix/bug-name
+```
+
+### Workflow Steps
+
+1. **`main` branch**: The stable, production-ready branch. Only receives merges from `develop` after milestone completion.
+
+2. **`develop` branch**: The integration branch where all features and fixes are merged. Branched from `main`.
+
+3. **Feature branches**: For new features, branch from `develop`:
+   ```bash
+   git switch develop
+   git pull origin develop
+   git checkout -b feature/your-feature-name
+   git push origin feature/your-feature-name
+   ```
+
+4. **Fix branches**: For bug fixes, branch from `develop`:
+   ```bash
+   git switch develop
+   git pull origin develop
+   git checkout -b fix/bug-name
+   git push origin fix/bug-name
+   ```
+
+5. **Test branches**: For writing tests, branch from your feature branch:
+   ```bash
+   git switch feature/your-feature-name
+   git checkout -b test/your-feature-name
+   git push origin test/your-feature-name
+   ```
+   When tests are complete, create a PR from `test/your-feature-name` → `feature/your-feature-name`.
+
+6. **Merging back**: Once your feature is complete (code + tests), create a PR from `feature/your-feature-name` → `develop`.
+
+### Pull Request Process
+
+1. Ensure all tests pass locally before creating a PR
+2. Request review from at least one team member
+3. Address all review comments before merging
+4. After approval, merge and delete the feature branch
 
 ## Get Started!
 
-Ready to contribute? Here's how to set up `deepwork` for local development.
+Ready to contribute? Here's how to set up deepwork for
+local development.
 
-1. Download a copy of `deepwork` locally.
+1. Fork the https://github.com/UBC-MDS/deepwork
+   repository on GitHub.
+2. Clone your fork locally (*if you want to work locally*)
 
-2. Create and activate a conda environment for `deepwork`:
-
-    ```console
-    $ conda create -n deepwork python=3.12
-    $ conda activate deepwork
+    ```shell
+    git clone git@github.com:your_name_here/deepwork.git
     ```
 
-3. Install `deepwork` using `poetry`:
+3. [Install hatch](https://hatch.pypa.io/latest/install/).
 
-    ```console
-    $ poetry install
+4. Create a branch for local development using the default branch (typically `main`) as a starting point. Use `fix` or `feat` as a prefix for your branch name.
+
+    ```shell
+    git checkout develop
+    git checkout -b fix-name-of-your-bugfix
     ```
 
-4. Use `git` (or similar) to create a branch for local development and make your changes:
+    Now you can make your changes locally.
 
-    ```console
-    $ git checkout -b name-of-your-bugfix-or-feature
+5. When you're done making changes, apply the quality assurance tools and check
+   that your changes pass our test suite. This is all included with tox
+
+    ```shell
+    hatch run test:run
     ```
 
-5. When you're done making changes, check that your changes conform to any code formatting requirements and pass any tests.
+6. Commit your changes and push your branch to GitHub. Please use [semantic
+   commit messages](https://www.conventionalcommits.org/).
 
-6. Commit your changes and open a pull request.
+    ```shell
+    git add .
+    git commit -m "fix: summarize your changes"
+    git push -u origin fix-name-of-your-bugfix
+    ```
 
-## Pull Request Guidelines
+7. Open the link displayed in the message when pushing your new branch in order
+   to submit a pull request.
+
+### Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. The pull request should include additional tests if appropriate.
-2. If the pull request adds functionality, the docs should be updated.
-3. The pull request should work for all currently supported operating systems and versions of Python.
-
-## Code of Conduct
-
-Please note that the `deepwork` project is released with a
-Code of Conduct. By contributing to this project you agree to abide by its terms.
+1. The pull request should include tests.
+2. If the pull request adds functionality, the docs should be updated. Put your
+   new functionality into a function with a docstring.
+3. Your pull request will automatically be checked by the full test suite.
+   It needs to pass all of them before it can be considered for merging.
