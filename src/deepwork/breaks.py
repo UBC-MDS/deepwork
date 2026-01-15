@@ -140,7 +140,7 @@ def suggest_break(
         # Filter by break type
         if break_type != "any" and activity["category"] != break_type:
             continue
-        if indoor_only and activity["location"] == :outdo
+        if indoor_only and activity["location"] == "outdoor":
 
         # Filter by duration
         if activity["duration"] > duration:
