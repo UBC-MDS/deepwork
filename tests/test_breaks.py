@@ -30,3 +30,13 @@ class TestSuggestBreakBasic:
         result1 = suggest_break(minutes_worked=60, energy_level=5, seed=42)
         result2 = suggest_break(minutes_worked=60, energy_level=5, seed=42)
         assert result1["name"] == result2["name"]
+
+    def test_minutes_worked_negative_raises_value_error(self):
+        """Test that minutes worked is not a negative number."""
+        with pytest.raises(ValueError, match="minutes_worked cannot be negative"):
+            suggest_break(minutes_worked=-5, energy_level=5)
+
+    def test_empty_break_type_raises_value_error(self):
+        """Test that break type is not an empty string."""
+        with pytest.raises(ValueError, match="Invalid break_type"):
+            suggest_break(60, 5, break_type="")

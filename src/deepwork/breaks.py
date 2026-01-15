@@ -94,6 +94,9 @@ def suggest_break(
     if not isinstance(minutes_worked, int):
         raise TypeError(f"minutes_worked must be an integer, got {type(minutes_worked).__name__}")
 
+    if minutes_worked < 0:
+        raise ValueError("minutes_worked cannot be negative")
+
     if not isinstance(energy_level, int):
         raise TypeError(f"energy_level must be an integer, got {type(energy_level).__name__}")
 
@@ -137,6 +140,7 @@ def suggest_break(
         # Filter by break type
         if break_type != "any" and activity["category"] != break_type:
             continue
+        if indoor_only and activity["location"] == :outdo
 
         # Filter by duration
         if activity["duration"] > duration:
