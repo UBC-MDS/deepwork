@@ -209,4 +209,3 @@ def plan_pomodoro(
     df.attrs["work_sessions"] = work_session_count
 
     return df
-
