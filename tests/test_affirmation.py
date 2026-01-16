@@ -44,7 +44,6 @@ class TestGetAffirmationMoods:
         result = get_affirmation(name="Test", mood="stressed", energy=5, category="growth", seed=42)
         assert result["category"] == "growth"
 
-
 class TestGetAffirmationEdgeCases:
     """Edge case tests for get_affirmation."""
 
@@ -55,7 +54,6 @@ class TestGetAffirmationEdgeCases:
     def test_name_capitalization(self):
         result = get_affirmation(name="alice", mood="happy", energy=5, seed=42)
         assert "Alice" in result["text"]
-
 
 class TestGetAffirmationExceptions:
     """Exception handling tests for get_affirmation."""

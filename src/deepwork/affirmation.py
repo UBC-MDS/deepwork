@@ -1,5 +1,6 @@
+### Step 2: Final Consolidated Implementation
 
-"""Developer affirmation module for flowstate."""
+"""Affirmation module for deepwork."""
 
 import random
 from typing import Optional
@@ -68,55 +69,74 @@ def get_affirmation(
 ) -> dict:
     """
     Get a personalized developer affirmation based on mood and energy.
-
-    The function maps the integer energy level to a specific intensity bucket ('low', 'medium', 
-    or 'high') and uses a weighted random algorithm to select the most appropriate affirmation. 
-    It prioritizes matches that align with both the category and the energy level.
+    
+    The function uses a weighted random algorithm to select the most appropriate 
+    affirmation. It prioritizes matches that align with both the category and the 
+    energy level, allowing for variety while maintaining personalization.
 
     Parameters
     ----------
     name : str
         User's name for personalization.
     mood : str
-        Current mood. Valid options: 'happy', 'stressed', 'anxious', 'tired', 'frustrated',
-        'motivated', 'neutral'.
+        Current mood. Valid options: 'happy', 'stressed', 'anxious', 'tired', 
+        'frustrated', 'motivated', 'neutral'.
     energy : int
         Energy level on a scale of 1-10.
         - 1-3: Low (calming/reassuring)
         - 4-7: Medium (balanced/steady)
         - 8-10: High (energetic/driving)
     category : str, optional
-        Specific category constraint. Valid options: 'motivation', 'confidence', 'persistence',
-        'self-care', 'growth'.
+        Specific category constraint (e.g., 'motivation', 'growth').
         If provided, this overrides the default mood-to-category mapping.
     seed : int, optional
-        Random seed for reproducible selection. Uses a local random instance to avoid 
-        affecting global state.
+        Random seed for reproducible selection. Uses a local random instance 
+        to avoid affecting global state.
 
     Returns
     -------
     dict
-        A dictionary containing:
-        - 'text' (str): The personalized affirmation string.
-        - 'category' (str): The category of the selected affirmation.
-        - 'mood_alignment' (float): A score (0.0 - 1.0) indicating how well the selection 
-          matches the input criteria.
+        Affirmation with keys: text, category, mood_alignment.
+    """
+    validate_inputs(name, mood, energy, category, seed)
+
+    if seed is not None:
+        random.seed(seed)
+
+    display_name = sanitize_name(name)
+    energy_cat = get_energy_category(energy)
+    preferred_categories = get_preferred_categories(mood, category)
+
+    candidates = weight_affirmations(preferred_categories, energy_cat)
+    selected = weighted_random_choice(candidates)
+
+    personalized_text = selected["text"].replace("{name}", display_name)
+    mood_alignment = _calculate_alignment(selected, preferred_categories, energy_cat)
+
+    return {
+        "text": personalized_text,
+        "category": selected["category"],
+        "mood_alignment": mood_alignment
+    }
+
+
+def validate_inputs(
+    name: str,
+    mood: str,
+    energy: int,
+    category: Optional[str],
+    seed: Optional[int]
+) -> None:
+    """
+    Validate all input parameters.
 
     Raises
     ------
     TypeError
-        If name, mood, or category are not strings, or if energy is not an integer.
+        If parameters have incorrect types.
     ValueError
-        If mood is not in the valid list, energy is not between 1-10, or category 
-        is provided but invalid.
-
-    Examples
-    --------
-    >>> result = get_affirmation(name="Alice", mood="stressed", energy=4)
-    >>> print(result['text'])
-    "The bug will surrender eventually, Alice."
+        If parameters have invalid values.
     """
-        # === Input Validation ===
     if not isinstance(name, str):
         raise TypeError(f"name must be a string, got {type(name).__name__}")
 
@@ -140,42 +160,102 @@ def get_affirmation(
 
     if seed is not None and not isinstance(seed, int):
         raise TypeError(f"seed must be an integer, got {type(seed).__name__}")
-    # === Main Logic ===
-    if seed is not None:
-        random.seed(seed)
 
-    # Sanitize name
-    display_name = name.strip().title() if name.strip() else "Developer"
 
-    # Determine energy category
+def sanitize_name(name: str) -> str:
+    """
+    Sanitize and format the user's name.
+
+    Parameters
+    ----------
+    name : str
+        Raw name input.
+
+    Returns
+    -------
+    str
+        Formatted name or 'Developer' if empty.
+    """
+    stripped = name.strip()
+    return stripped.title() if stripped else "Developer"
+
+
+def get_energy_category(energy: int) -> str:
+    """
+    Convert numeric energy level to category.
+
+    Parameters
+    ----------
+    energy : int
+        Energy level from 1-10.
+
+    Returns
+    -------
+    str
+        Energy category: 'low', 'medium', or 'high'.
+    """
     if energy <= 3:
-        energy_cat = "low"
+        return "low"
     elif energy <= 7:
-        energy_cat = "medium"
+        return "medium"
     else:
-        energy_cat = "high"
+        return "high"
 
-    # Get preferred categories based on mood
+
+def get_preferred_categories(mood: str, category: Optional[str]) -> list[str]:
+    """
+    Get preferred affirmation categories based on mood.
+
+    Parameters
+    ----------
+    mood : str
+        User's current mood.
+    category : str or None
+        Explicit category override.
+
+    Returns
+    -------
+    list of str
+        Ordered list of preferred categories.
+    """
     if category:
-        preferred_categories = [category]
-    else:
-        preferred_categories = MOOD_CATEGORY_MAP.get(mood.lower(), ["motivation"])
+        return [category.lower()]
+    return MOOD_CATEGORY_MAP.get(mood.lower(), ["motivation"])
 
-    # Filter and weight affirmations
+
+def weight_affirmations(
+    preferred_categories: list[str],
+    energy_cat: str
+) -> list[tuple[dict, float]]:
+    """
+    Weight affirmations based on category and energy match.
+
+    Parameters
+    ----------
+    preferred_categories : list of str
+        Preferred categories in order of preference.
+    energy_cat : str
+        User's energy category.
+
+    Returns
+    -------
+    list of tuple
+        List of (affirmation, weight) tuples.
+    """
     candidates = []
     energy_order = ["low", "medium", "high"]
 
     for affirmation in AFFIRMATIONS:
         weight = 1.0
 
-        # Category match
+        # Category match weighting
         if affirmation["category"] in preferred_categories:
             idx = preferred_categories.index(affirmation["category"])
             weight *= (3.0 if idx == 0 else 2.0)
         else:
             weight *= 0.5
 
-        # Energy match
+        # Energy match weighting
         if affirmation["energy"] == energy_cat:
             weight *= 2.0
         elif abs(energy_order.index(affirmation["energy"]) - energy_order.index(energy_cat)) == 1:
@@ -183,39 +263,60 @@ def get_affirmation(
 
         candidates.append((affirmation, weight))
 
-    if not candidates:
-        # Fallback: any affirmation matching energy
-        candidates = [(a, 1.0) for a in AFFIRMATIONS if a["energy"] == energy_cat]
+    return candidates if candidates else [(a, 1.0) for a in AFFIRMATIONS]
 
-    if not candidates:
-        # Final fallback
-        candidates = [(a, 1.0) for a in AFFIRMATIONS]
 
-    # Weighted random selection
+def weighted_random_choice(candidates: list[tuple[dict, float]]) -> dict:
+    """
+    Select an affirmation using weighted random selection.
+
+    Parameters
+    ----------
+    candidates : list of tuple
+        List of (affirmation, weight) tuples.
+
+    Returns
+    -------
+    dict
+        Selected affirmation.
+    """
     total = sum(w for _, w in candidates)
     r = random.uniform(0, total)
 
     cumulative = 0
-    selected = candidates[-1][0]
     for affirmation, weight in candidates:
         cumulative += weight
         if r <= cumulative:
-            selected = affirmation
-            break
+            return affirmation
 
-    # Personalize text
-    personalized_text = selected["text"].replace("{name}", display_name)
+    return candidates[-1][0]
 
-    # Calculate mood alignment
+
+def _calculate_alignment(
+    selected: dict,
+    preferred_categories: list[str],
+    energy_cat: str
+) -> float:
+    """
+    Calculate how well the affirmation aligns with user's mood/energy.
+
+    Parameters
+    ----------
+    selected : dict
+        The selected affirmation.
+    preferred_categories : list of str
+        User's preferred categories.
+    energy_cat : str
+        User's energy category.
+
+    Returns
+    -------
+    float
+        Alignment score between 0.0 and 1.0.
+    """
     score = 0.5  # Base score
     if selected["category"] in preferred_categories:
         score += 0.3
     if selected["energy"] == energy_cat:
         score += 0.2
-    mood_alignment = round(min(score, 1.0), 2)
-
-    return {
-        "text": personalized_text,
-        "category": selected["category"],
-        "mood_alignment": mood_alignment
-    }
+    return round(min(score, 1.0), 2)
