@@ -1,7 +1,18 @@
 """Pomodoro session planning function for deepwork."""
 
-from typing import Optional
 import pandas as pd
+import warnings
+from typing import Optional
+
+VALID_TECHNIQUES = ["pomodoro", "52-17", "90-20", "custom"]
+
+# Preset technique configurations (work_minutes, short_break, long_break, sessions_before_long)
+TECHNIQUE_PRESETS = {
+    "pomodoro": (25, 5, 15, 4),
+    "52-17": (52, 17, 17, 1),
+    "90-20": (90, 20, 30, 2),
+}
+
 
 def plan_pomodoro(
     total_minutes: int,
@@ -79,37 +90,37 @@ def plan_pomodoro(
     >>> schedule = plan_pomodoro(total_minutes=60, technique="custom", work_length=20, short_break=5)
     >>> schedule = plan_pomodoro(total_minutes=10, technique="pomodoro")  # final work session truncated to 10
     """
+    validate_inputs(total_minutes, technique, work_length, short_break, long_break, long_break_interval)
 
-"""Pomodoro session planning module for flowstate."""
+    work, s_break, l_break, interval = get_timing_config(
+        technique, work_length, short_break, long_break, long_break_interval
+    )
 
-import pandas as pd
-import warnings
-from typing import Optional
+    warn_if_too_short(total_minutes, work, s_break)
 
-VALID_TECHNIQUES = ["pomodoro", "52-17", "90-20", "custom"]
+    schedule, work_session_count = build_schedule(total_minutes, work, s_break, l_break, interval)
 
-# Preset technique configurations (work_minutes, short_break, long_break, sessions_before_long)
-TECHNIQUE_PRESETS = {
-    "pomodoro": (25, 5, 15, 4),
-    "52-17": (52, 17, 17, 1),  # No long break distinction
-    "90-20": (90, 20, 30, 2),
-}
+    return create_dataframe_with_metadata(schedule, work_session_count)
 
 
-def plan_pomodoro(
+def validate_inputs(
     total_minutes: int,
-    technique: str = "pomodoro",
-    work_length: Optional[int] = None,
-    short_break: Optional[int] = None,
-    long_break: Optional[int] = None,
-    long_break_interval: int = 4
-) -> pd.DataFrame:
+    technique: str,
+    work_length: Optional[int],
+    short_break: Optional[int],
+    long_break: Optional[int],
+    long_break_interval: int
+) -> None:
     """
-    Calculate a work/break schedule based on total available time.
+    Validate all input parameters.
 
-    [Keep existing docstring...]
+    Raises
+    ------
+    TypeError
+        If numeric parameters are not integers.
+    ValueError
+        If values are invalid or required parameters are missing.
     """
-    # === Input Validation ===
     if not isinstance(total_minutes, int):
         raise TypeError(f"total_minutes must be an integer, got {type(total_minutes).__name__}")
 
@@ -123,7 +134,6 @@ def plan_pomodoro(
         if work_length is None or short_break is None:
             raise ValueError("Custom technique requires work_length and short_break parameters")
 
-    # Validate optional int parameters if provided
     for name, val in [("work_length", work_length), ("short_break", short_break),
                       ("long_break", long_break), ("long_break_interval", long_break_interval)]:
         if val is not None:
@@ -132,38 +142,105 @@ def plan_pomodoro(
             if val <= 0:
                 raise ValueError(f"{name} must be positive")
 
-    # === Main Logic ===
-    # Get work/break durations based on technique
+
+def get_timing_config(
+    technique: str,
+    work_length: Optional[int],
+    short_break: Optional[int],
+    long_break: Optional[int],
+    long_break_interval: int
+) -> tuple[int, int, int, int]:
+    """
+    Get timing configuration based on technique and overrides.
+
+    Parameters
+    ----------
+    technique : str
+        The technique preset or 'custom'.
+    work_length, short_break, long_break : int or None
+        Optional overrides for timing values.
+    long_break_interval : int
+        Sessions before long break.
+
+    Returns
+    -------
+    tuple of int
+        (work_duration, short_break, long_break, interval)
+    """
     if technique == "custom":
         work = work_length
         s_break = short_break
         l_break = long_break if long_break else short_break
+        interval = long_break_interval
     else:
         preset = TECHNIQUE_PRESETS[technique]
         work = work_length if work_length else preset[0]
         s_break = short_break if short_break else preset[1]
         l_break = long_break if long_break else preset[2]
-        long_break_interval = preset[3]
+        interval = preset[3]
 
-    # Warn if total time seems too short
-    if total_minutes < work + s_break:
+    return work, s_break, l_break, interval
+
+
+def warn_if_too_short(total_minutes: int, work: int, short_break: int) -> None:
+    """
+    Warn if total time is less than one work+break cycle.
+
+    Parameters
+    ----------
+    total_minutes : int
+        Total available time.
+    work : int
+        Work session duration.
+    short_break : int
+        Short break duration.
+    """
+    if total_minutes < work + short_break:
         warnings.warn(
-            f"Total time ({total_minutes} min) is less than one work+break cycle ({work + s_break} min).",
+            f"Total time ({total_minutes} min) is less than one work+break cycle ({work + short_break} min).",
             UserWarning
         )
 
-    # Build the schedule
+
+def build_schedule(
+    total_minutes: int,
+    work: int,
+    short_break: int,
+    long_break: int,
+    long_break_interval: int
+) -> tuple[list[dict], int]:
+    """
+    Build the work/break schedule.
+
+    Parameters
+    ----------
+    total_minutes : int
+        Total available time.
+    work : int
+        Work session duration.
+    short_break : int
+        Short break duration.
+    long_break : int
+        Long break duration.
+    long_break_interval : int
+        Sessions before long break.
+
+    Returns
+    -------
+    tuple
+        (schedule list, work_session_count)
+    """
     schedule = []
     current_time = 0
     session_num = 0
     work_session_count = 0
 
     while current_time < total_minutes:
-        # Add work session
         remaining = total_minutes - current_time
         if remaining <= 0:
             break
 
+        # Add work session
         work_duration = min(work, remaining)
         session_num += 1
         work_session_count += 1
@@ -182,9 +259,9 @@ def plan_pomodoro(
         if remaining <= 0:
             break
 
-        # Determine break type (long break every N sessions)
+        # Determine break type
         is_long_break = (work_session_count % long_break_interval == 0)
-        break_duration = l_break if is_long_break else s_break
+        break_duration = long_break if is_long_break else short_break
         break_type = "long_break" if is_long_break else "short_break"
 
         break_duration = min(break_duration, remaining)
@@ -199,11 +276,34 @@ def plan_pomodoro(
         })
         current_time += break_duration
 
+    return schedule, work_session_count
+
+
+def create_dataframe_with_metadata(schedule: list[dict], work_session_count: int) -> pd.DataFrame:
+    """
+    Create DataFrame from schedule and add summary metadata.
+
+    Parameters
+    ----------
+    schedule : list of dict
+        The schedule entries.
+    work_session_count : int
+        Number of work sessions.
+
+    Returns
+    -------
+    pd.DataFrame
+        Schedule DataFrame with metadata in attrs.
+    """
     df = pd.DataFrame(schedule)
 
-    # Add summary stats as metadata (stored in attrs)
-    total_work = df[df["type"] == "work"]["duration_minutes"].sum()
-    total_break = df[df["type"].str.contains("break")]["duration_minutes"].sum()
+    if len(df) > 0:
+        total_work = df[df["type"] == "work"]["duration_minutes"].sum()
+        total_break = df[df["type"].str.contains("break")]["duration_minutes"].sum()
+    else:
+        total_work = 0
+        total_break = 0
+
     df.attrs["total_work_minutes"] = int(total_work)
     df.attrs["total_break_minutes"] = int(total_break)
     df.attrs["work_sessions"] = work_session_count

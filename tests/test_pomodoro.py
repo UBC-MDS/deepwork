@@ -32,6 +32,13 @@ class TestPlanPomodoroBasic:
         result = plan_pomodoro(total_minutes=60)
         assert result.iloc[0]["start_minute"] == 0
 
+    def test_dataframe_has_metadata(self):
+        """Test that DataFrame has summary metadata."""
+        result = plan_pomodoro(total_minutes=60)
+        assert "total_work_minutes" in result.attrs
+        assert "total_break_minutes" in result.attrs
+        assert "work_sessions" in result.attrs
+
 class TestPlanPomodoroTechniques:
     """Tests for different technique presets."""
 
@@ -92,3 +99,4 @@ class TestPlanPomodoroExceptions:
     def test_custom_missing_params_raises_valueerror(self):
         with pytest.raises(ValueError, match="requires work_length and short_break"):
             plan_pomodoro(total_minutes=60, technique="custom")
+
