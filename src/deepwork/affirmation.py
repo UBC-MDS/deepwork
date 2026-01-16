@@ -1,8 +1,4 @@
 
-"""Affirmation function for deepwork."""
-
-### Step 3: Implement Consolidated Function
-
 """Developer affirmation module for flowstate."""
 
 import random
@@ -120,6 +116,30 @@ def get_affirmation(
     >>> print(result['text'])
     "The bug will surrender eventually, Alice."
     """
+        # === Input Validation ===
+    if not isinstance(name, str):
+        raise TypeError(f"name must be a string, got {type(name).__name__}")
+
+    if not isinstance(mood, str):
+        raise TypeError(f"mood must be a string, got {type(mood).__name__}")
+
+    if mood.lower() not in VALID_MOODS:
+        raise ValueError(f"Invalid mood '{mood}'. Must be one of: {', '.join(VALID_MOODS)}")
+
+    if not isinstance(energy, int) or isinstance(energy, bool):
+        raise TypeError(f"energy must be an integer, got {type(energy).__name__}")
+
+    if energy < 1 or energy > 10:
+        raise ValueError("energy must be between 1 and 10")
+
+    if category is not None:
+        if not isinstance(category, str):
+            raise TypeError(f"category must be a string, got {type(category).__name__}")
+        if category.lower() not in VALID_CATEGORIES:
+            raise ValueError(f"Invalid category '{category}'. Must be one of: {', '.join(VALID_CATEGORIES)}")
+
+    if seed is not None and not isinstance(seed, int):
+        raise TypeError(f"seed must be an integer, got {type(seed).__name__}")
     # === Main Logic ===
     if seed is not None:
         random.seed(seed)
