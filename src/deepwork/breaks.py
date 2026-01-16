@@ -5,6 +5,7 @@ from typing import Optional
 VALID_BREAK_TYPES = ["active", "rest", "social", "mindful", "any"]
 VALID_DURATIONS = [5, 10, 15, 20]
 
+# Database 
 ACTIVITIES = [
     # Active activities
     {"name": "Desk Stretches", "category": "active", "duration": 5, "location": "indoor",
@@ -90,7 +91,35 @@ def suggest_break(
     >>> activity = suggest_break(minutes_worked=90, energy_level=4, break_type="active")
     >>> print(activity['name'])
     """
-     # Input Validation
+    validate_inputs(minutes_worked, energy_level, break_type, duration, indoor_only, seed)
+
+    warn_if_overworked(minutes_worked)
+
+    energy_cat = get_energy_category(energy_level)
+    candidates = filter_activities(break_type, duration, indoor_only, energy_cat)
+    weighted = weight_activities(candidates, energy_cat, minutes_worked)
+    selected = weighted_random_choice(weighted, seed)
+
+    return format_result(selected)
+
+def validate_inputs(
+    minutes_worked: int,
+    energy_level: int,
+    break_type: str,
+    duration: int,
+    indoor_only: bool,
+    seed: Optional[int]
+) -> None:
+    """
+    Validate all input parameters.
+
+    Raises
+    ------
+    TypeError
+        If parameters have incorrect types.
+    ValueError
+        If parameters have invalid values.
+    """
     if not isinstance(minutes_worked, int):
         raise TypeError(f"minutes_worked must be an integer, got {type(minutes_worked).__name__}")
 
@@ -115,92 +144,173 @@ def suggest_break(
     if seed is not None and not isinstance(seed, int):
         raise TypeError(f"seed must be an integer, got {type(seed).__name__}")
 
-    # Main Logic 
-    if seed is not None:
-        random.seed(seed)
+def warn_if_overworked(minutes_worked: int) -> None:
+    """
+    Warn if user has worked too long without a break.
 
-    # Warn if worked too long without break
+    Parameters
+    ----------
+    minutes_worked : int
+        Minutes worked since last break.
+    """
     if minutes_worked > 120:
         warnings.warn(
             f"You've worked {minutes_worked} minutes. Consider taking a longer break!",
             UserWarning
         )
 
-    # Determine energy category
-    if energy_level <= 3:
-        energy_cat = "low"
-    elif energy_level <= 7:
-        energy_cat = "medium"
-    else:
-        energy_cat = "high"
+def get_energy_category(energy_level: int) -> str:
+    """
+    Convert numeric energy level to category.
 
-    # Filter activities
+    Parameters
+    ----------
+    energy_level : int
+        Energy level from 1-10.
+
+    Returns
+    -------
+    str
+        Energy category: 'low', 'medium', or 'high'.
+    """
+    if energy_level <= 3:
+        return "low"
+    elif energy_level <= 7:
+        return "medium"
+    else:
+        return "high"
+
+def filter_activities(
+    break_type: str,
+    duration: int,
+    indoor_only: bool,
+    energy_cat: str
+) -> list[dict]:
+    """
+    Filter activities based on constraints.
+
+    Parameters
+    ----------
+    break_type : str
+        Desired break type or 'any'.
+    duration : int
+        Maximum activity duration.
+    indoor_only : bool
+        Whether to exclude outdoor activities.
+    energy_cat : str
+        User's energy category.
+
+    Returns
+    -------
+    list of dict
+        Filtered activity list.
+    """
     candidates = []
     for activity in ACTIVITIES:
         # Filter by break type
         if break_type != "any" and activity["category"] != break_type:
             continue
-        if indoor_only and activity["location"] == "outdoor":
-
         # Filter by duration
         if activity["duration"] > duration:
             continue
-
         # Filter by indoor constraint
         if indoor_only and activity["location"] == "outdoor":
             continue
-
-        # Filter by energy (low energy person shouldn't do high energy activities)
+        # Filter by energy
         if energy_cat == "low" and activity["energy_required"] == "high":
             continue
-
         candidates.append(activity)
 
-    # If no exact matches, relax constraints
+    # Fallback to relax duration constraint if no matches
     if not candidates:
         for activity in ACTIVITIES:
             if break_type != "any" and activity["category"] != break_type:
                 continue
             if indoor_only and activity["location"] == "outdoor":
                 continue
+            if energy_cat == "low" and activity["energy_required"] == "high":
+                continue
             candidates.append(activity)
 
     if not candidates:
-        candidates = ACTIVITIES  # Fallback to all activities
+        candidates = list(ACTIVITIES)
 
-    # Weight by energy alignment and work duration
+    return candidates
+
+def weight_activities(
+    candidates: list[dict],
+    energy_cat: str,
+    minutes_worked: int
+) -> list[tuple[dict, float]]:
+    """
+    Assign weights to activities based on energy alignment and work duration.
+
+    Parameters
+    ----------
+    candidates : list of dict
+        Filtered activities to weight.
+    energy_cat : str
+        User's energy category.
+    minutes_worked : int
+        How long user has been working.
+
+    Returns
+    -------
+    list of tuple
+        List of (activity, weight) tuples.
+    """
     weighted = []
     for activity in candidates:
         weight = 1.0
-
-        # Boost weight for energy-appropriate activities
+        # Boost weight for activities
         if activity["energy_required"] == energy_cat:
             weight *= 2.0
-
-        # After long work sessions, boost restful activities
+        # Boost restful activities if long work session
         if minutes_worked > 90:
             if activity["category"] in ["rest", "mindful"]:
                 weight *= 1.5
-
         weighted.append((activity, weight))
+    return weighted
 
-    # Weighted random selection
-    total = sum(w for _, w in weighted)
-    r = random.uniform(0, total)
+def weighted_random_choice(weighted: list[tuple[dict, float]], seed: Optional[int]) -> dict:
+    """
+    Select an activity using weighted random selection.
 
-    cumulative = 0
-    selected = weighted[-1][0]
-    for activity, weight in weighted:
-        cumulative += weight
-        if r <= cumulative:
-            selected = activity
-            break
+    Parameters
+    ----------
+    weighted : list of tuple
+        List of (activity, weight) tuples.
 
+    Returns
+    -------
+    dict
+        Selected activity.
+    """
+    rng = random.Random(seed)
+    activities, weights = zip(*weighted)
+    return rng.choices(activities, weights=weights, k=1)[0]
+
+def format_result(activity: dict) -> dict:
+    """
+    Format the selected activity for return.
+
+    Parameters
+    ----------
+    activity : dict
+        The selected activity.
+
+    Returns
+    -------
+    dict
+        Formatted activity dictionary.
+    """
     return {
-        "name": selected["name"],
-        "description": selected["description"],
-        "duration_minutes": selected["duration"],
-        "category": selected["category"],
-        "energy_required": selected["energy_required"],
-        "location": selected["location"]
-    } 
+        "name": activity["name"],
+        "description": activity["description"],
+        "duration_minutes": activity["duration"],
+        "category": activity["category"],
+        "energy_required": activity["energy_required"],
+        "location": activity["location"]
+    }
+    
+        
