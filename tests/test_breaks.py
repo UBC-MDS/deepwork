@@ -1,5 +1,5 @@
 import pytest
-from deepwork.breaks import suggest_break
+from deepwork.breaks import suggest_break, ACTIVITIES, format_result
 
 
 class TestSuggestBreakBasic:
@@ -41,6 +41,18 @@ class TestSuggestBreakBasic:
         with pytest.raises(ValueError, match="Invalid break_type"):
             suggest_break(60, 5, break_type="")
 
+    def test_high_energy_category(self):
+        result = suggest_break(minutes_worked=10, energy_level=9)
+        assert result is not None
+
+    def test_medium_energy_category(self):
+        result = suggest_break(minutes_worked=45, energy_level=5)
+        assert result is not None
+
+    def test_weighting_coverage(self):
+        result = suggest_break(minutes_worked=20, energy_level=5, break_type="rest")
+        assert result is not None
+
 class TestSuggestBreakEdgeCases:
     """Edge case tests for suggest_break."""
 
@@ -56,7 +68,22 @@ class TestSuggestBreakEdgeCases:
         for seed in range(10):
             result = suggest_break(minutes_worked=60, energy_level=2, seed=seed)
             assert result["energy_required"] != "high"
+            
+    def test_overwork_warning(self):
+        with pytest.warns(UserWarning, match="Consider taking a longer break"):
+            suggest_break(minutes_worked=130, energy_level=5)
 
+    def test_long_session_weighting(self):
+        result = suggest_break(minutes_worked=100, energy_level=2, break_type="any", seed=1)
+        assert result is not None
+
+    def test_fallback_with_low_energy(self):
+        result = suggest_break(minutes_worked=30, energy_level=2, break_type="social", duration=5)
+        assert result is not None
+
+    def test_fallback_with_indoor(self):
+        result = suggest_break(minutes_worked=30, energy_level=5, break_type="active", duration=5, indoor_only=True)
+        assert result is not None
 
 class TestSuggestBreakExceptions:
     """Exception handling tests for suggest_break."""
@@ -80,3 +107,12 @@ class TestSuggestBreakExceptions:
     def test_invalid_duration_raises_valueerror(self):
         with pytest.raises(ValueError, match="Invalid duration"):
             suggest_break(minutes_worked=60, energy_level=5, duration=7)
+
+    def test_indoor_only_not_bool_raises_typeerror(self):
+        with pytest.raises(TypeError, match="indoor_only must be a boolean"):
+            suggest_break(60, 5, indoor_only="True")
+
+    def test_seed_not_int_raises_typeerror(self):
+        with pytest.raises(TypeError, match="seed must be an integer"):
+            suggest_break(60, 5, seed=1.5)
+    
