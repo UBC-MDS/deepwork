@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Upcoming features and fixes
+### Added
+- `suggest_break` function that recommends break activities based on work duration and preferences (break type, duration, location, energy level)
 
 ## [0.1.0] - (1979-01-01)
 
