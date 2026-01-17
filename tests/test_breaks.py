@@ -11,7 +11,7 @@ def test_returns_dict():
 
 
 def test_has_required_keys():
-    """Test that result dict has required keys."""
+    """Tests that result dict has required keys."""
     result = suggest_break(minutes_worked=60, energy_level=5)
     assert "name" in result
     assert "description" in result
@@ -35,16 +35,19 @@ def test_seed_reproducibility():
 
 
 def test_high_energy_category():
+    """Tests that high energy levels returns an activity."""
     result = suggest_break(minutes_worked=10, energy_level=9)
     assert result is not None
 
 
 def test_medium_energy_category():
+    """Tests that medium energy levels returns an activity."""
     result = suggest_break(minutes_worked=45, energy_level=5)
     assert result is not None
 
 
 def test_weighting_coverage():
+    """Tests that weighting works for the rest break type."""
     result = suggest_break(minutes_worked=20, energy_level=5, break_type="rest")
     assert result is not None
 
@@ -52,37 +55,44 @@ def test_weighting_coverage():
 # Edge case tests
 
 def test_indoor_only_filter():
+    """Tests that indoor_only=True returns only indoor or either-location activities."""
     result = suggest_break(minutes_worked=60, energy_level=5, indoor_only=True, seed=42)
     assert result["location"] in ["indoor", "either"]
 
 
 def test_duration_filter():
+    """Tests that the duration inputted matches the length of the activity provided"""
     result = suggest_break(minutes_worked=60, energy_level=5, duration=5, seed=42)
     assert result["duration_minutes"] <= 5
 
 
 def test_low_energy_avoids_high_energy_activities():
+    """Tests that low energy levels do not return high energy activities."""
     for seed in range(10):
         result = suggest_break(minutes_worked=60, energy_level=2, seed=seed)
         assert result["energy_required"] != "high"
 
 
 def test_overwork_warning():
+    """Tests that a UserWarning is raised when user is working too long"""
     with pytest.warns(UserWarning, match="Consider taking a longer break"):
         suggest_break(minutes_worked=130, energy_level=5)
 
 
 def test_long_session_weighting():
+    """Tests that long work sessions will still return an activity"""
     result = suggest_break(minutes_worked=100, energy_level=2, break_type="any", seed=1)
     assert result is not None
 
 
 def test_fallback_with_low_energy():
+    """Checks that fallback logic still works for low energy levels."""
     result = suggest_break(minutes_worked=30, energy_level=2, break_type="social", duration=5)
     assert result is not None
 
 
 def test_fallback_with_indoor():
+    """Checks that fallback logic still works when indoor_only=True."""
     result = suggest_break(minutes_worked=30, energy_level=5, break_type="active", duration=5, indoor_only=True)
     assert result is not None
 
@@ -152,35 +162,42 @@ def test_empty_break_type_raises_value_error():
 
 
 def test_minutes_worked_not_int_raises_typeerror():
+    """Tests that a TypeError is raised if minutes_worked is a non-integer"""
     with pytest.raises(TypeError, match="minutes_worked must be an integer"):
         suggest_break(minutes_worked="60", energy_level=5)
 
 
 def test_energy_level_not_int_raises_typeerror():
+    """Tests that a TypeError is raised if energy_level is a non-integer"""
     with pytest.raises(TypeError, match="energy_level must be an integer"):
         suggest_break(minutes_worked=60, energy_level="5")
 
 
 def test_energy_level_out_of_range_raises_valueerror():
+    """Tests that a ValueError is raised if energy_level is outside the 1-10 range."""
     with pytest.raises(ValueError, match="must be between 1 and 10"):
         suggest_break(minutes_worked=60, energy_level=11)
 
 
 def test_invalid_break_type_raises_valueerror():
+    """Tests that a ValueError is raised if an invalid break type is provided."""
     with pytest.raises(ValueError, match="Invalid break_type"):
         suggest_break(minutes_worked=60, energy_level=5, break_type="invalid")
 
 
 def test_invalid_duration_raises_valueerror():
+    """Tests that a ValueError is raised if an invalid duration is provided."""
     with pytest.raises(ValueError, match="Invalid duration"):
         suggest_break(minutes_worked=60, energy_level=5, duration=7)
 
 
 def test_indoor_only_not_bool_raises_typeerror():
+    """Tests that a TypeError is raised if a non-boolean value is provided for indoor_only."""
     with pytest.raises(TypeError, match="indoor_only must be a boolean"):
         suggest_break(60, 5, indoor_only="True")
 
 
 def test_seed_not_int_raises_typeerror():
+    """Tests that a TypeError is raised if the seed is a non-integer."""
     with pytest.raises(TypeError, match="seed must be an integer"):
         suggest_break(60, 5, seed=1.5)
