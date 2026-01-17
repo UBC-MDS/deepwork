@@ -8,25 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ##  [Unreleased]
 
 - Upcoming features and fixes:
-- CI integration via GitHub Workflows
-- Publish on PyPi  
+  - CI integration via GitHub Workflows
+  - Publish on PyPi  
 
 ## [0.0.2] - (2026-01-17)
 
-- Upcoming features and fixes:
-=======
 ### Added
+
+- Added pandas dependency to pyproject.toml
 - `suggest_break` function that recommends break activities based on work duration and preferences (break type, duration, location, energy level)
 - `get_affirmation` function that returns motivational affirmations based on energy level and task type
 - `plan_pomodoro()` implementation for generating Pomodoro-style work/break schedules.
+- `prioritize_tasks()` function for ranking tasks by priority (either by importance or deadline)
 - Comprehensive test suite for `suggest_break`, `get_affirmation`, `plan_pomodoro`
 
 ### Changed
+
 - Updated all docstring to be more comprehensive and include examples of usage.
 
 ## [0.0.1] - (2026-01-10)
 
-- ## First release:
-
-- Create project structure for the software package
-- Write function specifications and documentation
+- First release:
+  - Create project structure for the software package
+  - Write function specifications and documentation
