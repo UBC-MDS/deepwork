@@ -100,3 +100,43 @@ class TestPlanPomodoroExceptions:
         with pytest.raises(ValueError, match="requires work_length and short_break"):
             plan_pomodoro(total_minutes=60, technique="custom")
 
+    def test_work_length_not_int_raises_typeerror(self):
+        """Test that non-integer work_length raises TypeError."""
+        with pytest.raises(TypeError, match="work_length must be an integer"):
+            plan_pomodoro(total_minutes=60, technique="custom", work_length=25.5, short_break=5)
+
+    def test_short_break_not_int_raises_typeerror(self):
+        """Test that non-integer short_break raises TypeError."""
+        with pytest.raises(TypeError, match="short_break must be an integer"):
+            plan_pomodoro(total_minutes=60, technique="custom", work_length=25, short_break="5")
+
+    def test_long_break_not_int_raises_typeerror(self):
+        """Test that non-integer long_break raises TypeError."""
+        with pytest.raises(TypeError, match="long_break must be an integer"):
+            plan_pomodoro(total_minutes=60, technique="pomodoro", long_break=15.0)
+
+    def test_long_break_interval_not_int_raises_typeerror(self):
+        """Test that non-integer long_break_interval raises TypeError."""
+        with pytest.raises(TypeError, match="long_break_interval must be an integer"):
+            plan_pomodoro(total_minutes=60, technique="custom", work_length=25, short_break=5, long_break_interval=4.0)
+
+    def test_work_length_not_positive_raises_valueerror(self):
+        """Test that non-positive work_length raises ValueError."""
+        with pytest.raises(ValueError, match="work_length must be positive"):
+            plan_pomodoro(total_minutes=60, technique="custom", work_length=0, short_break=5)
+
+    def test_short_break_not_positive_raises_valueerror(self):
+        """Test that non-positive short_break raises ValueError."""
+        with pytest.raises(ValueError, match="short_break must be positive"):
+            plan_pomodoro(total_minutes=60, technique="custom", work_length=25, short_break=-1)
+
+    def test_long_break_not_positive_raises_valueerror(self):
+        """Test that non-positive long_break raises ValueError."""
+        with pytest.raises(ValueError, match="long_break must be positive"):
+            plan_pomodoro(total_minutes=60, technique="pomodoro", long_break=0)
+
+    def test_long_break_interval_not_positive_raises_valueerror(self):
+        """Test that non-positive long_break_interval raises ValueError."""
+        with pytest.raises(ValueError, match="long_break_interval must be positive"):
+            plan_pomodoro(total_minutes=60, technique="custom", work_length=25, short_break=5, long_break_interval=0)
+
