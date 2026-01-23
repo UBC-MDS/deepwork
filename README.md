@@ -1,9 +1,10 @@
 # deepwork
 
-|  |  |
-|------------------------------------|------------------------------------|
-| Package | [![PyPI Version](https://img.shields.io/badge/PyPI-v0.1.0-lightgrey.svg)](#) [![Python Versions](https://img.shields.io/badge/Python-3.10%2B-lightgrey.svg)](#) |
-| Meta | [![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md) |
+| | |
+| --- | --- |
+| Testing | [![CI](https://github.com/UBC-MDS/deepwork/actions/workflows/build.yml/badge.svg)](https://github.com/UBC-MDS/deepwork/actions/workflows/build.yml) [![CD](https://github.com/UBC-MDS/deepwork/actions/workflows/deploy.yml/badge.svg)](https://github.com/UBC-MDS/deepwork/actions/workflows/deploy.yml) [![Coverage](https://codecov.io/github/UBC-MDS/deepwork/coverage.svg?branch=main)](https://codecov.io/gh/UBC-MDS/deepwork) |
+| Package | [![Test PyPI Latest Release](https://img.shields.io/badge/dynamic/json?url=https://test.pypi.org/pypi/deepwork/json&query=$.info.version&label=TestPyPI&color=green)](https://test.pypi.org/project/deepwork/) [![GitHub Release](https://img.shields.io/github/v/release/UBC-MDS/deepwork?color=green)](https://github.com/UBC-MDS/deepwork/releases) [![Python Version](https://img.shields.io/badge/dynamic/json?url=https://test.pypi.org/pypi/deepwork/json&query=$.info.requires_python&label=Python&color=green)](https://test.pypi.org/project/deepwork/) [![Repo Status](https://img.shields.io/badge/repo%20status-Active-brightgreen)](https://github.com/UBC-MDS/deepwork) |
+| Meta | [![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md) [![License - MIT](https://img.shields.io/badge/dynamic/json?url=https://test.pypi.org/pypi/deepwork/json&query=$.info.license&label=License&color=blue)](https://github.com/UBC-MDS/num_theory/blob/main/LICENSE) |
 
 `deepwork` is a Python package for developer productivity that helps developers stay focused and energized throughout the workday. `deepwork` provides tools to plan focus (pomodoro) sessions, prioritize tasks, take effective breaks, and stay motivated with personalized affirmations. The perfect package for developers looking to optimize their workflow.
 
