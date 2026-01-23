@@ -93,7 +93,6 @@ packages = ["src/deepwork"]
 #--------------- Version from git tags ---------------#
 [tool.hatch.version]
 source = "vcs"
-tag-pattern = "v(?P<version>.*)"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "src/deepwork/_version.py"
