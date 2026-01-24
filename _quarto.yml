@@ -8,7 +8,7 @@ project:
     - reference/
 
 website:
-  title: "deepwork"
+  title: "deepworks"
   navbar:
     title-href: README.md
     left:
@@ -25,7 +25,7 @@ format:
     toc: true
 
 quartodoc:
-  package: deepwork
+  package: deepworks
   dir: reference
   sections:
     - title: Productivity Tools
