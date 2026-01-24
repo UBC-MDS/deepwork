@@ -38,11 +38,11 @@ jobs:
         run: |
           hatch run test:run tests/ -v --cov --cov-report=term --cov-branch --cov-report=xml
 
-      # - name: Upload to codecov # pending codecov step
-      #   uses: codecov/codecov-action@v5
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     files: ./coverage.xml
+      - name: Upload to codecov # pending codecov step
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
 
 
   style-check:
