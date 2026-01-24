@@ -19,7 +19,9 @@ website:
 
 format:
   html:
-    theme: cosmo
+    theme:
+      - darkly
+      - custom.scss
     toc: true
 
 quartodoc:
