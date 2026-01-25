@@ -1,4 +1,4 @@
-"""Task prioritization function for deepwork."""
+"""Task prioritization function for deepworks."""
 
 import pandas as pd
 from datetime import datetime, date
@@ -8,10 +8,9 @@ VALID_METHODS = ["weighted", "deadline"]
 DEFAULT_WEIGHTS = {"importance": 0.5, "effort": 0.3, "deadline": 0.2}
 DATE_FMT = "%Y-%m-%d"
 
+
 def prioritize_tasks(
-    tasks: list[dict],
-    method: str = "weighted",
-    weights: Optional[dict] = None
+    tasks: list[dict], method: str = "weighted", weights: Optional[dict] = None
 ) -> pd.DataFrame:
     """
     Rank tasks by priority using different prioritization methods.
@@ -111,11 +110,12 @@ def prioritize_tasks(
     ...     {"name": "Refactor module", "importance": 4, "effort": 3}
     ... ]
     >>> df = prioritize_tasks(tasks)
-    >>> df[["name", "priority_score", "rank"]]
-                     name  priority_score  rank
-    0    Fix critical bug            4.30     1
-    1     Refactor module            3.70     2
-    2  Write documentation            2.70     3
+    >>> list(df["name"])
+    ['Fix critical bug', 'Refactor module', 'Write documentation']
+    >>> list(df["priority_score"])
+    [4.3, 3.5, 2.7]
+    >>> list(df["rank"])
+    [1, 2, 3]
 
     **Using deadline method for time-sensitive prioritization:**
 
@@ -128,11 +128,10 @@ def prioritize_tasks(
     ...     {"name": "Backlog item"}  # No deadline
     ... ]
     >>> df = prioritize_tasks(tasks, method="deadline")
-    >>> df[["name", "priority_score", "days_until_deadline"]]
-                name  priority_score  days_until_deadline
-    0  Urgent report             100                    0
-    1  Weekly review              93                    7
-    2   Backlog item               0                 None
+    >>> list(df["name"])
+    ['Urgent report', 'Weekly review', 'Backlog item']
+    >>> list(df["priority_score"])
+    [100, 93, 0]
 
     **Custom weights emphasizing effort over importance:**
 
@@ -142,17 +141,17 @@ def prioritize_tasks(
     ... ]
     >>> custom_weights = {"importance": 0.2, "effort": 0.6, "deadline": 0.2}
     >>> df = prioritize_tasks(tasks, weights=custom_weights)
-    >>> df[["name", "priority_score", "rank"]]
-              name  priority_score  rank
-    0    Quick win            4.00     1
-    1  Big project            2.00     2
+    >>> list(df["name"])
+    ['Quick win', 'Big project']
+    >>> list(df["priority_score"])
+    [4.0, 2.2]
 
     **Minimal task (only required field):**
 
     >>> tasks = [{"name": "Simple task"}]
     >>> df = prioritize_tasks(tasks)
-    >>> df["priority_score"].iloc[0]  # Uses defaults: importance=3, effort=3
-    3.1
+    >>> float(df["priority_score"].iloc[0])  # Uses defaults: importance=3, effort=3
+    3.0
     """
     _validate_inputs(tasks, method, weights)
 
@@ -160,7 +159,7 @@ def prioritize_tasks(
 
     if method == "weighted":
         scored_tasks = _calculate_weighted_scores(tasks, effective_weights)
-    elif method == "deadline":
+    else:  # method == "deadline" (validated by _validate_inputs)
         scored_tasks = _calculate_deadline_scores(tasks)
 
     _assign_ranks(scored_tasks)
@@ -177,12 +176,16 @@ def _validate_inputs(tasks: list, method: str, weights: Optional[dict]) -> None:
 
     for i, task in enumerate(tasks):
         if not isinstance(task, dict):
-            raise TypeError(f"Task at index {i} must be a dict, got {type(task).__name__}")
+            raise TypeError(
+                f"Task at index {i} must be a dict, got {type(task).__name__}"
+            )
         if "name" not in task:
             raise ValueError(f"Task at index {i} missing required field 'name'")
 
     if method not in VALID_METHODS:
-        raise ValueError(f"Invalid method '{method}'. Must be one of: {', '.join(VALID_METHODS)}")
+        raise ValueError(
+            f"Invalid method '{method}'. Must be one of: {', '.join(VALID_METHODS)}"
+        )
 
     if weights is not None and not isinstance(weights, dict):
         raise TypeError(f"weights must be a dict, got {type(weights).__name__}")
@@ -203,17 +206,22 @@ def _get_urgency_level(days_left: Optional[int]) -> int:
     """Converts days remaining into a 1-5 urgency score."""
     if days_left is None:
         return 3  # Default middle score for no deadline
-    
-    if days_left <= 1: return 5
-    elif days_left <= 3: return 4
-    elif days_left <= 7: return 3
-    elif days_left <= 14: return 2
-    else: return 1
+
+    if days_left <= 1:
+        return 5
+    elif days_left <= 3:
+        return 4
+    elif days_left <= 7:
+        return 3
+    elif days_left <= 14:
+        return 2
+    else:
+        return 1
 
 
 def _calculate_weighted_scores(tasks: list[dict], weights: dict) -> list[dict]:
     scored = []
-    
+
     w_imp = weights.get("importance", 0.5)
     w_eff = weights.get("effort", 0.3)
     w_dead = weights.get("deadline", 0.2)
@@ -221,10 +229,10 @@ def _calculate_weighted_scores(tasks: list[dict], weights: dict) -> list[dict]:
     for task in tasks:
         importance = task.get("importance", 3)
         effort = task.get("effort", 3)
-        
+
         # 1. Get standardized days remaining
         days_left = _get_days_remaining(task.get("deadline"))
-        
+
         # 2. Convert to urgency level (1-5)
         deadline_score = _get_urgency_level(days_left)
 
@@ -232,7 +240,9 @@ def _calculate_weighted_scores(tasks: list[dict], weights: dict) -> list[dict]:
         effort_score = 6 - effort
 
         # 4. Final Weighted Calculation
-        score = (importance * w_imp) + (effort_score * w_eff) + (deadline_score * w_dead)
+        score = (
+            (importance * w_imp) + (effort_score * w_eff) + (deadline_score * w_dead)
+        )
 
         scored.append({**task, "priority_score": round(score, 2)})
 
@@ -241,21 +251,19 @@ def _calculate_weighted_scores(tasks: list[dict], weights: dict) -> list[dict]:
 
 def _calculate_deadline_scores(tasks: list[dict]) -> list[dict]:
     scored = []
-    
+
     for task in tasks:
         # 1. Reuse the same date parsing helper
         days_left = _get_days_remaining(task.get("deadline"))
-        
+
         score = 0
         if days_left is not None:
             # Higher score for closer deadlines (invert days)
             score = max(0, 100 - days_left)
 
-        scored.append({
-            **task,
-            "priority_score": score,
-            "days_until_deadline": days_left
-        })
+        scored.append(
+            {**task, "priority_score": score, "days_until_deadline": days_left}
+        )
 
     return scored
 

@@ -244,8 +244,14 @@ cython_debug/
 # Hatch-VCS
 _version.py
 
-# Coverage file from pytest
+# Coverage files from pytest
 .coverage
+coverage.xml
 
 # Development file from copier
 DEVELOPMENT.md
+/.quarto/
+**/*.quarto_ipynb
+
+# Ruff cache
+.ruff_cache

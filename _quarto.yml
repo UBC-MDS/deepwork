@@ -1,0 +1,37 @@
+project:
+  type: website
+  output-dir: docs
+  render:
+    - index.qmd
+    - README.md
+    - CONTRIBUTING.md
+    - reference/
+
+website:
+  title: "deepworks"
+  navbar:
+    title-href: README.md
+    left:
+      - text: "Reference"
+        href: reference/index.qmd
+      - text: "Contributing"
+        href: CONTRIBUTING.md
+
+format:
+  html:
+    theme:
+      - darkly
+      - custom.scss
+    toc: true
+
+quartodoc:
+  package: deepworks
+  dir: reference
+  sections:
+    - title: Productivity Tools
+      desc: Functions to help developers stay focused and energized.
+      contents:
+        - pomodoro.plan_pomodoro
+        - prioritize.prioritize_tasks
+        - breaks.suggest_break
+        - affirmation.get_affirmation

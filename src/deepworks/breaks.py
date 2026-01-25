@@ -1,50 +1,140 @@
+"""Breaks module for deepworks."""
+
 import random
-import warnings 
+import warnings
 from typing import Optional
 
 VALID_BREAK_TYPES = ["active", "rest", "social", "mindful", "any"]
 VALID_DURATIONS = [5, 10, 15, 20]
 
-# Database 
+# Database
 ACTIVITIES = [
     # Active activities
-    {"name": "Desk Stretches", "category": "active", "duration": 5, "location": "indoor",
-     "energy_required": "low", "description": "Simple stretches you can do at your desk to relieve tension."},
-    {"name": "Quick Walk", "category": "active", "duration": 10, "location": "either",
-     "energy_required": "medium", "description": "Take a brisk walk around the office or outside."},
-    {"name": "Jumping Jacks", "category": "active", "duration": 5, "location": "indoor",
-     "energy_required": "high", "description": "Get your blood pumping with some jumping jacks."},
-    {"name": "Stair Climb", "category": "active", "duration": 10, "location": "indoor",
-     "energy_required": "high", "description": "Walk up and down stairs to boost energy."},
-    {"name": "Outdoor Walk", "category": "active", "duration": 15, "location": "outdoor",
-     "energy_required": "medium", "description": "Take a refreshing walk outside in fresh air."},
-
+    {
+        "name": "Desk Stretches",
+        "category": "active",
+        "duration": 5,
+        "location": "indoor",
+        "energy_required": "low",
+        "description": "Simple stretches you can do at your desk to relieve tension.",
+    },
+    {
+        "name": "Quick Walk",
+        "category": "active",
+        "duration": 10,
+        "location": "either",
+        "energy_required": "medium",
+        "description": "Take a brisk walk around the office or outside.",
+    },
+    {
+        "name": "Jumping Jacks",
+        "category": "active",
+        "duration": 5,
+        "location": "indoor",
+        "energy_required": "high",
+        "description": "Get your blood pumping with some jumping jacks.",
+    },
+    {
+        "name": "Stair Climb",
+        "category": "active",
+        "duration": 10,
+        "location": "indoor",
+        "energy_required": "high",
+        "description": "Walk up and down stairs to boost energy.",
+    },
+    {
+        "name": "Outdoor Walk",
+        "category": "active",
+        "duration": 15,
+        "location": "outdoor",
+        "energy_required": "medium",
+        "description": "Take a refreshing walk outside in fresh air.",
+    },
     # Rest activities
-    {"name": "Power Nap", "category": "rest", "duration": 20, "location": "indoor",
-     "energy_required": "low", "description": "Close your eyes and rest for a quick recharge."},
-    {"name": "Eye Rest", "category": "rest", "duration": 5, "location": "indoor",
-     "energy_required": "low", "description": "Look away from screen, focus on distant objects."},
-    {"name": "Quiet Sitting", "category": "rest", "duration": 10, "location": "indoor",
-     "energy_required": "low", "description": "Sit quietly without any stimulation."},
-
+    {
+        "name": "Power Nap",
+        "category": "rest",
+        "duration": 20,
+        "location": "indoor",
+        "energy_required": "low",
+        "description": "Close your eyes and rest for a quick recharge.",
+    },
+    {
+        "name": "Eye Rest",
+        "category": "rest",
+        "duration": 5,
+        "location": "indoor",
+        "energy_required": "low",
+        "description": "Look away from screen, focus on distant objects.",
+    },
+    {
+        "name": "Quiet Sitting",
+        "category": "rest",
+        "duration": 10,
+        "location": "indoor",
+        "energy_required": "low",
+        "description": "Sit quietly without any stimulation.",
+    },
     # Social activities
-    {"name": "Chat with Colleague", "category": "social", "duration": 10, "location": "indoor",
-     "energy_required": "medium", "description": "Have a quick non-work chat with a coworker."},
-    {"name": "Message a Friend", "category": "social", "duration": 5, "location": "indoor",
-     "energy_required": "low", "description": "Send a quick message to someone you care about."},
-    {"name": "Coffee Break", "category": "social", "duration": 15, "location": "either",
-     "energy_required": "medium", "description": "Grab a coffee and chat with someone."},
-
+    {
+        "name": "Chat with Colleague",
+        "category": "social",
+        "duration": 10,
+        "location": "indoor",
+        "energy_required": "medium",
+        "description": "Have a quick non-work chat with a coworker.",
+    },
+    {
+        "name": "Message a Friend",
+        "category": "social",
+        "duration": 5,
+        "location": "indoor",
+        "energy_required": "low",
+        "description": "Send a quick message to someone you care about.",
+    },
+    {
+        "name": "Coffee Break",
+        "category": "social",
+        "duration": 15,
+        "location": "either",
+        "energy_required": "medium",
+        "description": "Grab a coffee and chat with someone.",
+    },
     # Mindful activities
-    {"name": "Deep Breathing", "category": "mindful", "duration": 5, "location": "indoor",
-     "energy_required": "low", "description": "Practice 4-7-8 breathing or box breathing."},
-    {"name": "Guided Meditation", "category": "mindful", "duration": 10, "location": "indoor",
-     "energy_required": "low", "description": "Follow a short guided meditation."},
-    {"name": "Mindful Walking", "category": "mindful", "duration": 15, "location": "either",
-     "energy_required": "medium", "description": "Walk slowly and focus on each step."},
-    {"name": "Gratitude Reflection", "category": "mindful", "duration": 5, "location": "indoor",
-     "energy_required": "low", "description": "Think of three things you're grateful for."},
+    {
+        "name": "Deep Breathing",
+        "category": "mindful",
+        "duration": 5,
+        "location": "indoor",
+        "energy_required": "low",
+        "description": "Practice 4-7-8 breathing or box breathing.",
+    },
+    {
+        "name": "Guided Meditation",
+        "category": "mindful",
+        "duration": 10,
+        "location": "indoor",
+        "energy_required": "low",
+        "description": "Follow a short guided meditation.",
+    },
+    {
+        "name": "Mindful Walking",
+        "category": "mindful",
+        "duration": 15,
+        "location": "either",
+        "energy_required": "medium",
+        "description": "Walk slowly and focus on each step.",
+    },
+    {
+        "name": "Gratitude Reflection",
+        "category": "mindful",
+        "duration": 5,
+        "location": "indoor",
+        "energy_required": "low",
+        "description": "Think of three things you're grateful for.",
+    },
 ]
+
 
 def suggest_break(
     minutes_worked: int,
@@ -52,7 +142,7 @@ def suggest_break(
     break_type: str = "any",
     duration: int = 5,
     indoor_only: bool = False,
-    seed: Optional[int] = None
+    seed: Optional[int] = None,
 ) -> dict:
     """
     Suggest a break activity based on current state and preferences.
@@ -88,10 +178,25 @@ def suggest_break(
 
     Examples
     --------
-    >>> activity = suggest_break(minutes_worked=90, energy_level=4, break_type="active")
+    >>> activity = suggest_break(
+    ...     minutes_worked=90, energy_level=4, break_type="active", seed=42
+    ... )
     >>> print(activity['name'])
+    Jumping Jacks
+    >>> print(activity['duration_minutes'])
+    5
+    >>> print(activity['category'])
+    active
+
+    >>> activity = suggest_break(
+    ...     minutes_worked=30, energy_level=2, break_type="mindful", duration=10, seed=123
+    ... )
+    >>> print(activity)
+    {'name': 'Deep Breathing', 'description': 'Practice 4-7-8 breathing or box breathing.', 'duration_minutes': 5, 'category': 'mindful', 'energy_required': 'low', 'location': 'indoor'}
     """
-    _validate_inputs(minutes_worked, energy_level, break_type, duration, indoor_only, seed)
+    _validate_inputs(
+        minutes_worked, energy_level, break_type, duration, indoor_only, seed
+    )
 
     _warn_if_overworked(minutes_worked)
 
@@ -102,13 +207,14 @@ def suggest_break(
 
     return _format_result(selected)
 
+
 def _validate_inputs(
     minutes_worked: int,
     energy_level: int,
     break_type: str,
     duration: int,
     indoor_only: bool,
-    seed: Optional[int]
+    seed: Optional[int],
 ) -> None:
     """
     Validate all input parameters.
@@ -121,28 +227,39 @@ def _validate_inputs(
         If parameters have invalid values.
     """
     if not isinstance(minutes_worked, int):
-        raise TypeError(f"minutes_worked must be an integer, got {type(minutes_worked).__name__}")
+        raise TypeError(
+            f"minutes_worked must be an integer, got {type(minutes_worked).__name__}"
+        )
 
     if minutes_worked < 0:
         raise ValueError("minutes_worked cannot be negative")
 
     if not isinstance(energy_level, int):
-        raise TypeError(f"energy_level must be an integer, got {type(energy_level).__name__}")
+        raise TypeError(
+            f"energy_level must be an integer, got {type(energy_level).__name__}"
+        )
 
     if energy_level < 1 or energy_level > 10:
         raise ValueError("energy_level must be between 1 and 10")
 
     if break_type not in VALID_BREAK_TYPES:
-        raise ValueError(f"Invalid break_type '{break_type}'. Must be one of: {', '.join(VALID_BREAK_TYPES)}")
+        raise ValueError(
+            f"Invalid break_type '{break_type}'. Must be one of: {', '.join(VALID_BREAK_TYPES)}"
+        )
 
     if duration not in VALID_DURATIONS:
-        raise ValueError(f"Invalid duration '{duration}'. Must be one of: {VALID_DURATIONS}")
+        raise ValueError(
+            f"Invalid duration '{duration}'. Must be one of: {VALID_DURATIONS}"
+        )
 
     if not isinstance(indoor_only, bool):
-        raise TypeError(f"indoor_only must be a boolean, got {type(indoor_only).__name__}")
+        raise TypeError(
+            f"indoor_only must be a boolean, got {type(indoor_only).__name__}"
+        )
 
     if seed is not None and not isinstance(seed, int):
         raise TypeError(f"seed must be an integer, got {type(seed).__name__}")
+
 
 def _warn_if_overworked(minutes_worked: int) -> None:
     """
@@ -156,8 +273,9 @@ def _warn_if_overworked(minutes_worked: int) -> None:
     if minutes_worked > 120:
         warnings.warn(
             f"You've worked {minutes_worked} minutes. Consider taking a longer break!",
-            UserWarning
+            UserWarning,
         )
+
 
 def _get_energy_category(energy_level: int) -> str:
     """
@@ -180,11 +298,9 @@ def _get_energy_category(energy_level: int) -> str:
     else:
         return "high"
 
+
 def _filter_activities(
-    break_type: str,
-    duration: int,
-    indoor_only: bool,
-    energy_cat: str
+    break_type: str, duration: int, indoor_only: bool, energy_cat: str
 ) -> list[dict]:
     """
     Filter activities based on constraints.
@@ -208,8 +324,9 @@ def _filter_activities(
     candidates = []
     for activity in ACTIVITIES:
         # Filter by break type
-        if break_type != "any" and activity["category"] != break_type:
-            continue
+        if break_type != "any":
+            if activity["category"] != break_type:
+                continue
         # Filter by duration
         if activity["duration"] > duration:
             continue
@@ -237,10 +354,9 @@ def _filter_activities(
 
     return candidates
 
+
 def _weight_activities(
-    candidates: list[dict],
-    energy_cat: str,
-    minutes_worked: int
+    candidates: list[dict], energy_cat: str, minutes_worked: int
 ) -> list[tuple[dict, float]]:
     """
     Assign weights to activities based on energy alignment and work duration.
@@ -272,7 +388,10 @@ def _weight_activities(
         weighted.append((activity, weight))
     return weighted
 
-def _weighted_random_choice(weighted: list[tuple[dict, float]], seed: Optional[int]) -> dict:
+
+def _weighted_random_choice(
+    weighted: list[tuple[dict, float]], seed: Optional[int]
+) -> dict:
     """
     Select an activity using weighted random selection.
 
@@ -286,9 +405,13 @@ def _weighted_random_choice(weighted: list[tuple[dict, float]], seed: Optional[i
     dict
         Selected activity.
     """
-    rng = random.Random(seed)
+    if seed is None:
+        rng = random.Random()
+    else:
+        rng = random.Random(seed)
     activities, weights = zip(*weighted)
     return rng.choices(activities, weights=weights, k=1)[0]
+
 
 def _format_result(activity: dict) -> dict:
     """
@@ -310,5 +433,5 @@ def _format_result(activity: dict) -> dict:
         "duration_minutes": activity["duration"],
         "category": activity["category"],
         "energy_required": activity["energy_required"],
-        "location": activity["location"]
+        "location": activity["location"],
     }
