@@ -2,7 +2,6 @@
 
 import pytest
 from deepworks.affirmation import get_affirmation
-from unittest.mock import patch
 
 # Basic functionality tests
 
@@ -212,37 +211,37 @@ def test_weighting_with_extreme_energy_mismatch():
     assert all("text" in r for r in results)
 
 
-def test_weighted_random_fallback_execution():
+def test_weighted_random_fallback_execution(monkeypatch):
     """
     Test that _weighted_random_choice hits the fallback return.
-    
-    We mock random.uniform to return a value larger than the total weights. 
-    This forces the selection loop to finish without returning, triggering 
+
+    We mock random.uniform to return a value larger than the total weights.
+    This forces the selection loop to finish without returning, triggering
     the safety 'return candidates[-1][0]' at the end.
     """
     # Force random value to be 10000.0 (impossible normally)
-    with patch("deepworks.affirmation.random.uniform", return_value=10000.0):
-        result = get_affirmation(name="Test", mood="happy", energy=5)
-        
-        # Verify we still got a valid result (the fallback worked)
-        assert result["text"]
-class TestGetAffirmationEnergy:
-    """Tests for energy level handling."""
+    monkeypatch.setattr("deepworks.affirmation.random.uniform", lambda *args: 10000.0)
+    result = get_affirmation(name="Test", mood="happy", energy=5)
 
-    def test_low_energy_range(self):
-        """Test energy 1-3 maps to low energy category."""
-        for energy in [1, 2, 3]:
-            result = get_affirmation(name="Test", mood="neutral", energy=energy, seed=42)
-            assert "text" in result
+    # Verify we still got a valid result (the fallback worked)
+    assert result["text"]
 
-    def test_medium_energy_range(self):
-        """Test energy 4-7 maps to medium energy category."""
-        for energy in [4, 5, 6, 7]:
-            result = get_affirmation(name="Test", mood="neutral", energy=energy, seed=42)
-            assert "text" in result
+# Testing different energy levels
 
-    def test_high_energy_range(self):
-        """Test energy 8-10 maps to high energy category."""
-        for energy in [8, 9, 10]:
-            result = get_affirmation(name="Test", mood="neutral", energy=energy, seed=42)
-            assert "text" in result
+def test_low_energy_range():
+    """Test energy 1-3 maps to low energy category."""
+    for energy in [1, 2, 3]:
+        result = get_affirmation(name="Test", mood="neutral", energy=energy, seed=42)
+        assert "text" in result
+
+def test_medium_energy_range():
+    """Test energy 4-7 maps to medium energy category."""
+    for energy in [4, 5, 6, 7]:
+        result = get_affirmation(name="Test", mood="neutral", energy=energy, seed=42)
+        assert "text" in result
+
+def test_high_energy_range():
+    """Test energy 8-10 maps to high energy category."""
+    for energy in [8, 9, 10]:
+        result = get_affirmation(name="Test", mood="neutral", energy=energy, seed=42)
+        assert "text" in result
