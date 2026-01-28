@@ -1,6 +1,6 @@
 # From Ilya's Lecture 5
 # Example 4a: AI Code Critic Issues
-name: AI Critic (Issues)
+name: AI Critic (Issues) - Gemini
 
 on:
   issues:
