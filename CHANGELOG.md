@@ -8,7 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ##  [Unreleased]
 
 - Upcoming features and fixes:
-  - AI integration on GitHub issues
+
+##  [v2.0.0] - (2026-01-31)
+
+### Added
+
+- `ai-critic-pr` workflow for AI-powered PR reviews (`.github/workflows/ai-critic-pr.yml`)
+- `ai-critic-issue` workflow for AI-powered issue analysis (`.github/workflows/ai-critic-issue.yml`)
+- `ai-docstring-detective` workflow for detecting missing docstrings (`.github/workflows/ai-docstring-detective.yml`)
+- `ai-tutorial-gen` workflow for AI-generated tutorials (`.github/workflows/ai-tutorial-gen.yml`)
+- `docs-preview` for previewing documentation in PR's (`.github/workflows/docs-preview.yml`)
+
+### Changed
+
+- Placeholder
 
 ## [v1.0.2] - (2026-01-26)
 
