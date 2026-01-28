@@ -1,6 +1,6 @@
 # From Ilya's Lecture 5
-# Example 4b: AI Code Critic PR (GitHub Models)
-name: AI Critic (PR)
+# Example 4b: AI Code Critic PR (Gemini API via curl)
+name: 04b-ai-critic-pr-gemini
 
 on:
   workflow_dispatch:
@@ -9,7 +9,6 @@ on:
      - 'src/**/*.py' # Only run on python source changes
 
 permissions:
-  models: read
   contents: read
   pull-requests: write
 
@@ -34,43 +33,49 @@ jobs:
           echo "$DIFF" >> "$GITHUB_OUTPUT"
           echo "$EOF" >> "$GITHUB_OUTPUT"
 
-      - name: Ask AI critic
+      - name: Ask AI critic (Gemini)
         id: ai-response
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          DIFF_CONTENT: ${{ steps.diff.outputs.diff }}
+          DIFF: ${{ steps.diff.outputs.diff }}
         run: |
-          # Create the request payload
-          PAYLOAD=$(jq -n \
-            --arg diff "$DIFF_CONTENT" \
+          # 1. Define the System Prompt
+          SYSTEM_PROMPT="You are a helpful code review assistant for this repository.
+          Your task is to review pull request code changes for quality, correctness, and maintainability.
+          
+          If the code is well-written, efficient, and follows best practices, acknowledge the good work and highlight what was done well.
+          
+          If the code has issues—such as bugs, inefficiencies, poor readability, or missing tests—provide constructive feedback with specific suggestions for improvement. Explain why the change would help.
+          
+          Be respectful and supportive—remember that code review is a learning opportunity for everyone involved.
+          
+          Focus on meaningful improvements rather than nitpicking style preferences.
+          Always respond with ready-to-use markdown content."
+          
+          # 2. Construct the JSON payload securely using jq
+          jq -n \
+            --arg system_prompt "$SYSTEM_PROMPT" \
+            --arg diff "$DIFF" \
             '{
-              "systemInstruction": {
-                "parts": [{
-                  "text": "You are a helpful code review assistant for this repository. Your task is to review pull request code changes for quality, correctness, and maintainability.\n\nIf the code is well-written, efficient, and follows best practices, acknowledge the good work and highlight what was done well.\n\nIf the code has issues—such as bugs, inefficiencies, poor readability, or missing tests—provide constructive feedback with specific suggestions for improvement. Explain why the change would help.\n\nBe respectful and supportive—remember that code review is a learning opportunity for everyone involved.\n\nFocus on meaningful improvements rather than nitpicking style preferences.\nAlways respond with ready-to-use markdown content."
-                }]
-              },
-              "contents": [{
-                "parts": [{
-                  "text": ("Code Changes:\n\n```diff\n" + $diff + "\n```")
-                }]
-              }],
-              "generationConfig": {
-                "maxOutputTokens": 1000
-              }
-            }')
+              contents: [{ parts: [{ text: ("Code Changes:\n\n```diff\n" + $diff + "\n```") }] }],
+              system_instruction: { parts: [{ text: $system_prompt }] }
+            }' > payload.json
 
-          # Call Gemini API
-          RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$GEMINI_API_KEY" \
+          # 3. Call Gemini API (Updated to gemini-2.5-flash)
+          # Note: Ensure "gemini-2.5-flash" is the correct active model ID for your API key.
+          RESPONSE=$(curl -s -X POST \
             -H "Content-Type: application/json" \
-            -d "$PAYLOAD")
+            -H "x-goog-api-key: $GEMINI_API_KEY" \
+            -d @payload.json \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent")
 
-          # Extract the response text
-          RESULT=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // "Error: Could not get AI response"')
+          # 4. Parse the output text using jq
+          REVIEW=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // "Error: Failed to get response from Gemini. Check logs for details."')
 
-          # Output using heredoc for multiline safety
+          # 5. Set the output for the next step
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "response<<$EOF" >> "$GITHUB_OUTPUT"
-          echo "$RESULT" >> "$GITHUB_OUTPUT"
+          echo "$REVIEW" >> "$GITHUB_OUTPUT"
           echo "$EOF" >> "$GITHUB_OUTPUT"
 
       - name: Comment results on the PR
