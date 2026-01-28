@@ -4,7 +4,7 @@ name: AI Tutorial Generator - Gemini
 
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize, closed]
     paths:
       - 'src/**/*.py'
   workflow_dispatch:
