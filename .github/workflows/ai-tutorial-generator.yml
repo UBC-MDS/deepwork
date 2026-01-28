@@ -12,3 +12,70 @@ permissions:
   contents: read
   pull-requests: write
   models: read
+
+jobs:
+  suggest-tutorial:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Code Changes
+        id: diff
+        run: |
+          # Fetch main to compare against
+          git fetch origin main
+          # Get diff of python files in src, limited to 8000 chars to fit context
+          DIFF=$(git diff origin/main HEAD -- src/ | head -c 8000)
+          
+          # Handle empty diff
+          if [ -z "$DIFF" ]; then
+            DIFF="No python source changes detected."
+          fi
+          
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$DIFF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate Content
+        id: ai
+        uses: actions/ai-inference@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max-tokens: 2000
+          system-prompt: |
+            You are a creative technical writer for the "Vancouver Survival" package tutorial. 
+            The tutorial teaches users how to use the code with funny stories about miserable Vancouver commuters (rain, buses, coffee).
+            
+            Your goal: Read the code changes provided. 
+            If the changes introduce new logic or functions, write a new section for the `tutorial.qmd` file.
+            
+            The section should:
+            1. Have a catchy title.
+            2. Tell a short (2-3 sentences) story about a commuter encountering the problem this code solves.
+            3. Show a Python code block using the new/changed function.
+            
+            If the changes are minor or internal refactoring, just say "No tutorial updates needed for this change."
+          prompt: |
+            Here are the recent code changes:
+            
+            ```diff
+            ${{ steps.diff.outputs.content }}
+            ```
+
+      - name: Post Comment
+        if: steps.ai.outputs.response != 'No tutorial updates needed for this change.'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### 🤖 AI Tutorial Suggestion
+            
+            Based on your code changes, here is a suggested addition to `tutorial.qmd`:
+            
+            ---
+            
+            ${{ steps.ai.outputs.response }}
