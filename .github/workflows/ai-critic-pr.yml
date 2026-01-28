@@ -12,3 +12,56 @@ permissions:
   models: read
   contents: read
   pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for diff
+
+      - name: Get PR Diff
+        id: diff
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          # specific to the files we care about, limiting context size
+          DIFF=$(git diff origin/${{ github.base_ref }} HEAD src/ | head -n 1000)
+          
+          # Using heredoc for multiline output safety
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "diff<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$DIFF" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Ask AI critic
+        id: ai-response
+        uses: actions/ai-inference@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max-tokens: 1000
+          system-prompt: |
+            You are a helpful code review assistant for this repository.                                                                                                                                                   
+            Your task is to review pull request code changes for quality, correctness, and maintainability.                                                                                                                
+
+            If the code is well-written, efficient, and follows best practices, acknowledge the good work and highlight what was done well.
+
+            If the code has issues—such as bugs, inefficiencies, poor readability, or missing tests—provide constructive feedback with specific suggestions for improvement. Explain why the change would help.
+
+            Be respectful and supportive—remember that code review is a learning opportunity for everyone involved.
+
+            Focus on meaningful improvements rather than nitpicking style preferences.
+            Always respond with ready-to-use markdown content.
+          prompt: |
+            Code Changes:
+            
+            ```diff
+            ${{ steps.diff.outputs.diff }}
+            ```
+
+      - name: Comment results on the PR
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.ai-response.outputs.response }}
