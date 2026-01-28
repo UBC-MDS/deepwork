@@ -12,3 +12,64 @@ permissions:
   contents: read
   pull-requests: write
   models: read
+
+jobs:
+  doc-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Diff
+        id: diff
+        run: |
+          git fetch origin main
+          # Get diff, specifically looking for lines starting with + that might contain docstrings
+          DIFF=$(git diff origin/main HEAD -- src/ | head -c 8000)
+          
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$DIFF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Analyze Docstrings
+        id: ai
+        uses: actions/ai-inference@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max-tokens: 1000
+          system-prompt: |
+            You are a novice Python user who is easily confused. You hate jargon.
+            Your job is to read the code diffs, specifically focusing on Docstrings (""" ... """).
+            
+            If you see new or changed docstrings:
+            1. Read them as if you know nothing about the internal logic.
+            2. If they are perfectly clear, output "LGTM".
+            3. If they use undefined units (e.g., "wind_speed" without "km/h"), vague terms, or complex grammar, complain about it.
+            
+            Ask clarifying questions like:
+            - "Wait, is this in Celcius or Fahrenheit?"
+            - "What happens if this input is None?"
+            - "I don't understand this word."
+            
+            Be brief but strictly helpful in your confusion.
+          prompt: |
+            Here are the changes:
+            
+            ```diff
+            ${{ steps.diff.outputs.content }}
+            ```
+
+      - name: Post Comment
+        if: steps.ai.outputs.response != 'LGTM' && steps.ai.outputs.response != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### 🕵️ Docstring Detective
+            
+            I found some things confusing in your documentation:
+            
+            ${{ steps.ai.outputs.response }}
