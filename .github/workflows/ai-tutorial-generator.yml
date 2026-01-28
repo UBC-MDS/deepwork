@@ -1,9 +1,10 @@
 # From Ilya's Lecture 7
-# Example: AI Tutorial Generator (GitHub Models)
-name: AI Tutorial Generator
+# Example: AI Tutorial Generator (Gemini API via curl)
+name: AI Tutorial Generator - Gemini
 
 on:
   pull_request:
+    types: [opened, reopened, synchronize, closed]
     paths:
       - 'src/**/*.py'
   workflow_dispatch:
@@ -11,4 +12,59 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  models: read
+
+jobs:
+  suggest-tutorial:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Code Changes
+        id: diff
+        run: |
+          # Use base_ref if available (PR), otherwise default to main
+          BASE=${{ github.base_ref || 'main' }}
+          git fetch origin $BASE
+          
+          # Get diff of python files in src, limited to 8000 chars to fit context
+          DIFF=$(git diff origin/$BASE HEAD -- src/ | head -c 8000)
+          
+          # Handle empty diff
+          if [ -z "$DIFF" ]; then
+            DIFF="No python source changes detected."
+          fi
+          
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$DIFF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate Content (Gemini)
+        id: ai
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DIFF: ${{ steps.diff.outputs.content }}
+        run: |
+          # 1. Define the System Prompt (The Persona)
+          SYSTEM_PROMPT="You are a creative technical writer for the 'Vancouver Survival' package tutorial. 
+          The tutorial teaches users how to use the code with funny stories about miserable Vancouver commuters (rain, buses, coffee).
+          
+          Your goal: Read the code changes provided. 
+          If the changes introduce new logic or functions, write a new section for the 'tutorial.qmd' file.
+          
+          The section should:
+          1. Have a catchy title.
+          2. Tell a short (2-3 sentences) story about a commuter encountering the problem this code solves.
+          3. Show a Python code block using the new/changed function.
+          
+          If the changes are minor or internal refactoring, just say 'No tutorial updates needed for this change.'"
+          
+          # 2. Construct the JSON payload securely using jq
+          jq -n \
+            --arg system_prompt "$SYSTEM_PROMPT" \
+            --arg diff "$DIFF" \
+            '{
+              contents: [{ parts: [{ text: ("Here are the recent code changes:\n\n```diff\n" + $diff + "\n```") }] }],
+              system_instruction
