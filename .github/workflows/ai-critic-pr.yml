@@ -1,14 +1,87 @@
 # From Ilya's Lecture 5
-# Example 4b: AI Code Critic PR (GitHub Models)
-name: AI Critic (PR)
+# Example 4b: AI Code Critic PR (Gemini API via curl)
+name: AI Critic (PR) - Gemini
 
 on:
   workflow_dispatch:
   pull_request:
-   paths:
-     - 'src/**/*.py' # Only run on python source changes
+    types: [opened, reopened, synchronize, closed]
+    paths:
+      - 'src/**/*.py' # Only run on python source changes
 
 permissions:
-  models: read
   contents: read
   pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for diff
+
+      - name: Get PR Diff
+        id: diff
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          # specific to the files we care about, limiting context size
+          DIFF=$(git diff origin/${{ github.base_ref }} HEAD src/ | head -n 1000)
+          
+          # Using heredoc for multiline output safety
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "diff<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$DIFF" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Ask AI critic (Gemini)
+        id: ai-response
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DIFF: ${{ steps.diff.outputs.diff }}
+        run: |
+          # 1. Define the System Prompt
+          SYSTEM_PROMPT="You are a helpful code review assistant for this repository.
+          Your task is to review pull request code changes for quality, correctness, and maintainability.
+          
+          If the code is well-written, efficient, and follows best practices, acknowledge the good work and highlight what was done well.
+          
+          If the code has issues—such as bugs, inefficiencies, poor readability, or missing tests—provide constructive feedback with specific suggestions for improvement. Explain why the change would help.
+          
+          Be respectful and supportive—remember that code review is a learning opportunity for everyone involved.
+          
+          Focus on meaningful improvements rather than nitpicking style preferences.
+          Always respond with ready-to-use markdown content."
+          
+          # 2. Construct the JSON payload securely using jq
+          jq -n \
+            --arg system_prompt "$SYSTEM_PROMPT" \
+            --arg diff "$DIFF" \
+            '{
+              contents: [{ parts: [{ text: ("Code Changes:\n\n```diff\n" + $diff + "\n```") }] }],
+              system_instruction: { parts: [{ text: $system_prompt }] }
+            }' > payload.json
+
+          # 3. Call Gemini API (Updated to gemini-2.5-flash)
+          # Note: Ensure "gemini-2.5-flash" is the correct active model ID for your API key.
+          RESPONSE=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-goog-api-key: $GEMINI_API_KEY" \
+            -d @payload.json \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent")
+
+          # 4. Parse the output text using jq
+          REVIEW=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // "Error: Failed to get response from Gemini. Check logs for details."')
+
+          # 5. Set the output for the next step
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "response<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$REVIEW" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Comment results on the PR
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.ai-response.outputs.response }}
