@@ -387,3 +387,16 @@ def test_lower_effort_ranks_higher():
     easy_rank = result[result["name"] == "Easy"]["rank"].values[0]
     hard_rank = result[result["name"] == "Hard"]["rank"].values[0]
     assert easy_rank < hard_rank  # Lower rank number = higher priority
+
+def test_partial_weights_use_defaults():
+    """
+    Test that partial weights dict falls back to DEFAULT_WEIGHTS for missing keys.
+
+    When only some weight keys are provided, the missing keys should use values
+    from DEFAULT_WEIGHTS rather than hardcoded fallbacks.
+    """
+    tasks = [{"name": "Task", "importance": 4, "effort": 2}]
+    # Only provide importance weight, effort and deadline should use defaults
+    result = prioritize_tasks(tasks, weights={"importance": 1.0})
+    # importance=4*1.0=4, effort=(6-2)*0.3=1.2, deadline=3*0.2=0.6 → 5.8
+    assert result.iloc[0]["priority_score"] == 5.8
