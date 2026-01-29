@@ -102,7 +102,7 @@ def prioritize_tasks(
 
     Examples
     --------
-    **Basic usage with weighted method (default):**
+    Basic usage with the weighted method (default):
 
     >>> tasks = [
     ...     {"name": "Fix critical bug", "importance": 5, "effort": 2},
@@ -117,7 +117,8 @@ def prioritize_tasks(
     >>> list(df["rank"])
     [1, 2, 3]
 
-    **Using deadline method for time-sensitive prioritization:**
+    Using the deadline method for time-sensitive prioritization. Tasks due
+    sooner get higher scores (today = 100, 7 days out = 93):
 
     >>> from datetime import date, timedelta
     >>> today = date.today().strftime("%Y-%m-%d")
@@ -133,7 +134,7 @@ def prioritize_tasks(
     >>> list(df["priority_score"])
     [100, 93, 0]
 
-    **Custom weights emphasizing effort over importance:**
+    Custom weights to emphasize effort (quick wins) over importance:
 
     >>> tasks = [
     ...     {"name": "Quick win", "importance": 2, "effort": 1},
@@ -146,11 +147,12 @@ def prioritize_tasks(
     >>> list(df["priority_score"])
     [4.0, 2.2]
 
-    **Minimal task (only required field):**
+    Minimal task with only the required 'name' field (defaults: importance=3,
+    effort=3, no deadline):
 
     >>> tasks = [{"name": "Simple task"}]
     >>> df = prioritize_tasks(tasks)
-    >>> float(df["priority_score"].iloc[0])  # Uses defaults: importance=3, effort=3
+    >>> float(df["priority_score"].iloc[0])
     3.0
     """
     _validate_inputs(tasks, method, weights)
