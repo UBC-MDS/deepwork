@@ -96,3 +96,43 @@ What if deadlines are all that matter?
 # Pure deadline-based prioritization
 deadline_ranked = prioritize_tasks(tasks, method="deadline")
 deadline_ranked[["name", "deadline", "days_until_deadline", "priority_score", "rank"]]
+```
+
+### Taking a Break
+
+You've completed two Pomodoro sessions. Your eyes are tired from staring at the screen, and your energy is dropping.
+
+```{python}
+from deepworks.breaks import suggest_break
+
+# After 50 minutes of work, energy is flagging
+minutes_worked = 50
+current_energy = 3
+
+break_suggestion = suggest_break(
+    minutes_worked=minutes_worked,
+    energy_level=current_energy,
+    break_type="active",
+    duration=5
+)
+
+print(f"Suggested Activity: {break_suggestion['name']}")
+print(f"Duration: {break_suggestion['duration_minutes']} minutes")
+print(f"Description: {break_suggestion['description']}")
+```
+
+Feeling more introspective? Try a mindful break.
+
+```{python}
+mindful_break = suggest_break(
+    minutes_worked=90,
+    energy_level=4,
+    break_type="mindful",
+    duration=10,
+    seed=42  # For reproducibility
+)
+
+print(f"Mindful Activity: {mindful_break['name']}")
+print(f"Location: {mindful_break['location']}")
+print(f"Description: {mindful_break['description']}")
+```
