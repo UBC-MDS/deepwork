@@ -25,3 +25,37 @@ affirmation = get_affirmation(name=name, mood=mood, energy=energy)
 print(f"Category: {affirmation['category']}")
 print(f"\n\"{affirmation['text']}\"")
 ```
+
+### Planning Your Focus Time
+
+You have 2 hours before the standup meeting. Let's make them count with a structured work schedule using the Pomodoro technique.
+
+```{python}
+from deepworks.pomodoro import plan_pomodoro
+
+# 2 hours of available time
+available_minutes = 120
+
+schedule = plan_pomodoro(total_minutes=available_minutes, technique="pomodoro")
+
+# Calculate summary stats from the schedule
+work_sessions = len(schedule[schedule["type"] == "work"])
+total_work = schedule[schedule["type"] == "work"]["duration_minutes"].sum()
+total_breaks = schedule[schedule["type"] != "work"]["duration_minutes"].sum()
+
+print(f"Work sessions planned: {work_sessions}")
+print(f"Total work time: {total_work} minutes")
+print(f"Total break time: {total_breaks} minutes")
+print()
+schedule
+```
+
+The classic Pomodoro technique uses 25-minute work blocks with 5-minute breaks. But maybe you prefer longer focus sessions?
+
+```{python}
+# Try the 52-17 technique for deeper focus
+deep_schedule = plan_pomodoro(total_minutes=available_minutes, technique="52-17")
+
+print("52-17 Technique Schedule:")
+deep_schedule
+```
