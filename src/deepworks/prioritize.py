@@ -222,9 +222,9 @@ def _get_urgency_level(days_left: Optional[int]) -> int:
 def _calculate_weighted_scores(tasks: list[dict], weights: dict) -> list[dict]:
     scored = []
 
-    w_imp = weights.get("importance", 0.5)
-    w_eff = weights.get("effort", 0.3)
-    w_dead = weights.get("deadline", 0.2)
+    w_imp = weights.get("importance", DEFAULT_WEIGHTS["importance"])
+    w_eff = weights.get("effort", DEFAULT_WEIGHTS["effort"])
+    w_dead = weights.get("deadline", DEFAULT_WEIGHTS["deadline"])
 
     for task in tasks:
         importance = task.get("importance", 3)
