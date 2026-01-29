@@ -59,3 +59,40 @@ deep_schedule = plan_pomodoro(total_minutes=available_minutes, technique="52-17"
 print("52-17 Technique Schedule:")
 deep_schedule
 ```
+
+### Prioritizing the Chaos
+
+Now let's tackle that to-do list. You have several tasks competing for attention. The `prioritize_tasks` function ranks them based on importance, effort, and deadlines.
+
+```{python}
+from deepworks.prioritize import prioritize_tasks
+from datetime import date, timedelta
+
+# Your Monday task list
+today = date.today()
+
+tasks = [
+    {"name": "Fix critical bug in prod", "importance": 5, "effort": 2,
+     "deadline": today.strftime("%Y-%m-%d")},
+    {"name": "Review teammate's PR", "importance": 4, "effort": 1,
+     "deadline": (today + timedelta(days=1)).strftime("%Y-%m-%d")},
+    {"name": "Write unit tests", "importance": 3, "effort": 4,
+     "deadline": (today + timedelta(days=5)).strftime("%Y-%m-%d")},
+    {"name": "Update documentation", "importance": 2, "effort": 2,
+     "deadline": (today + timedelta(days=7)).strftime("%Y-%m-%d")},
+    {"name": "Refactor auth module", "importance": 4, "effort": 5,
+     "deadline": (today + timedelta(days=3)).strftime("%Y-%m-%d")},
+]
+
+ranked_tasks = prioritize_tasks(tasks, method="weighted")
+ranked_tasks[["name", "importance", "effort", "priority_score", "rank"]]
+```
+
+The weighted method balances importance (50%), effort efficiency (30%), and deadline urgency (20%). High importance + low effort + soon deadline = top priority.
+
+What if deadlines are all that matter?
+
+```{python}
+# Pure deadline-based prioritization
+deadline_ranked = prioritize_tasks(tasks, method="deadline")
+deadline_ranked[["name", "deadline", "days_until_deadline", "priority_score", "rank"]]
