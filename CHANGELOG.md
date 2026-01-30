@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-##  [Unreleased]
+## [Unreleased]
 
 - Upcoming features and fixes:
 
-##  [v2.0.0] - (2026-01-31)
+## [v2.0.0] - (2026-01-31)
 
 ### Added
 
@@ -18,10 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ai-docstring-detective` workflow for detecting missing docstrings (`.github/workflows/ai-docstring-detective.yml`)
 - `ai-tutorial-gen` workflow for AI-generated tutorials (`.github/workflows/ai-tutorial-gen.yml`)
 - `docs-preview` for previewing documentation in PR's (`.github/workflows/docs-preview.yml`)
+- Interactive tutorial (`tutorial.qmd`) demonstrating all package functions with executable Python cells
+- Jupyter dependency to docs optional dependencies for executable documentation code cells
+- Tutorial link added to documentation navbar
 
 ### Changed
 
-- Placeholder
+- Updated `CONTRIBUTING.md` with clear git workflow and branch structure diagram
+- Updated `CONTRIBUTING.md` with developer setup instructions using Hatch
+- Improved `README.md` with updated usage examples and test case for a single module
+- Updated dynamic badges in `README.md` for CI/CD, package info, and metadata
 
 ## [v1.0.2] - (2026-01-26)
 
