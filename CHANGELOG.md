@@ -12,6 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ##  [v2.0.0] - (2026-01-31)
 
 ### Added
+- Improvements to `get_affirmation()`Comprehensive test coverage for `get_affirmation()`:
+    - `ENERGY_ORDER` module-level constant for energy level ordering (previously defined locally in `_weight_affirmations`)
+    - Comment documenting fallback behavior in `_weighted_random_choice()` for floating-point edge cases
+
+### Changed
+- Enhanced `get_affirmation()` docstring with detailed mood-category mappings and energy level descriptions:
+    - Added Notes section to docstring explaining the weighting algorithm and mood alignment score calculation
+    - Improved docstring examples with reproducible seed values
+
+### Fixed
+
+- `affirmation.py`:
+    - Random seed isolation: Changed from `random.seed(seed)` to `rng = random.Random(seed)` to prevent polluting global random state when using the seed parameter
+
+### Added
+- Added `RETROSPECTIVE.md` to the quarto website for project reflection
+
+### Added
 
 - `ai-critic-pr` workflow for AI-powered PR reviews (`.github/workflows/ai-critic-pr.yml`)
 - `ai-critic-issue` workflow for AI-powered issue analysis (`.github/workflows/ai-critic-issue.yml`)
