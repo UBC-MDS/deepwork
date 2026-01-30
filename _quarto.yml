@@ -5,6 +5,7 @@ project:
     - index.qmd
     - README.md
     - CONTRIBUTING.md
+    - tutorial.qmd
     - RETROSPECTIVE.md
     - reference/
 
@@ -13,6 +14,8 @@ website:
   navbar:
     title-href: README.md
     left:
+      - text: "Tutorial"
+        href: tutorial.qmd
       - text: "Reference"
         href: reference/index.qmd
       - text: "Contributing"
