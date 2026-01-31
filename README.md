@@ -194,4 +194,5 @@ Interested in contributing? Check out the contributing guidelines [here](./CONTR
 
 - Copyright © 2026 Jingbo Wang, Jennifer Onyebuchi, Shanzé Khemani, Jiro Amato.
 
-- Free software distributed under the [MIT License](./LICENSE).
+- Free software distributed under the [MIT License](./LICENSE.md).
+- Documentation made available under **Creative Commons By 4.0 - Attribution 4.0 International** ([CC-BY-4.0](./LICENSE.md))
