@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Simplified `plan_pomodoro()` to return plain DataFrame without metadata attributes (`.attrs`), removed `_create_dataframe_with_metadata()` function, and changed `_build_schedule()` to return only the schedule list
 - Updated `CONTRIBUTING.md` with clear git workflow and branch structure diagram
 - Updated `CONTRIBUTING.md` with developer setup instructions using Hatch
 - Improved `README.md` with updated usage examples and test case for a single module
