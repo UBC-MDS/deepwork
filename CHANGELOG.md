@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Placeholder
+- Simplified `plan_pomodoro()` to return plain DataFrame without metadata attributes (`.attrs`), removed `_create_dataframe_with_metadata()` function, and changed `_build_schedule()` to return only the schedule list
 
 ## [v1.0.2] - (2026-01-26)
 
