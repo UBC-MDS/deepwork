@@ -94,6 +94,7 @@ packages = ["src/deepworks"]
 #--------------- Version from git tags ---------------#
 [tool.hatch.version]
 source = "vcs"
+raw-options = {version_scheme = "no-guess-dev", local_scheme = "no-local-version"}
 
 [tool.hatch.build.hooks.vcs]
 version-file = "src/deepworks/_version.py"
