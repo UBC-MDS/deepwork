@@ -46,13 +46,21 @@ from deepworks.pomodoro import plan_pomodoro
 from deepworks.prioritize import prioritize_tasks
 from deepworks.breaks import suggest_break
 
-## Get a motivational affirmation
+# Get a motivational affirmation
 affirmation = get_affirmation(name="Alex", mood="stressed", energy=3)
 print(affirmation["text"])
+# Output:
+# Alex, you're on fire! Ship that feature!
 
 # Plan a 60-minute focus session
 schedule = plan_pomodoro(total_minutes=60, technique="pomodoro")
 print(schedule)
+# Output:
+#    session         type  duration_minutes  start_minute  end_minute
+# 0        1         work                25             0          25
+# 1        2  short_break                 5            25          30
+# 2        3         work                25            30          55
+# 3        4  short_break                 5            55          60
 
 # Prioritize your tasks
 tasks = [
@@ -61,10 +69,16 @@ tasks = [
 ]
 ranked = prioritize_tasks(tasks, method="weighted")
 print(ranked)
+# Output:
+#          name  importance  effort  priority_score  rank
+# 0     Fix bug           5       2             4.3     1
+# 1  Write docs           3       4             2.7     2
 
 # Get a break suggestion
 activity = suggest_break(minutes_worked=45, energy_level=5, break_type="active", duration=10)
 print(activity["name"], "-", activity["description"])
+# Output:
+# Quick Walk - Take a brisk walk around the office or outside.
 ```
 
 ## Developer Setup
